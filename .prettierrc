@@ -1,0 +1,8 @@
+{
+  "useTabs": false,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "printWidth": 128,
+  "plugins": ["prettier-plugin-astro"],
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+}

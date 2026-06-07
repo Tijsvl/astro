@@ -1,11 +1,77 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const columnCount = 3;
+
+const imageSizes = [
+  { width: 400, height: 500 },
+  { width: 400, height: 500 },
+  { width: 1280, height: 720 }
+];
+
+const shuffle = (items: string[]) => {
+  const array = [...items];
+
+  for (let index = array.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
+  }
+
+  return array;
+};
+
+const alphabet = shuffle('abcdefghijklmnopqrstuvwxyz'.split(''));
+const photosPerColumn = Math.ceil(alphabet.length / columnCount);
+
+const buildPhoto = (seed: string) => {
+  const size = imageSizes[Math.floor(Math.random() * imageSizes.length)];
+
+  return `https://picsum.photos/seed/${seed}/${size.width}/${size.height}`;
+};
+
+const columns = Array.from({ length: columnCount }, (_, columnIndex) => {
+  const start = columnIndex * photosPerColumn;
+  const end = start + photosPerColumn;
+
+  return alphabet.slice(start, end).map((seed) => ({ seed, src: buildPhoto(seed) }));
+});
 ---
 
 <Layout>
-	<Welcome />
+  <article class='gallery' style={`--column-count: ${columnCount};`}>
+    {
+      columns.map((column) => (
+        <section class='column'>
+          {column.map(({ seed, src }) => (
+            <img src={src} alt={`Random photo seed ${seed}`} />
+          ))}
+        </section>
+      ))
+    }
+  </article>
 </Layout>
+
+<style lang='scss'>
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    align-items: start;
+
+    @media screen and (width > 768px) {
+      grid-template-columns: repeat(var(--column-count), minmax(0, 1fr));
+    }
+  }
+
+  .column {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+</style>

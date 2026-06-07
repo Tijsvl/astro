@@ -1,0 +1,83 @@
+@font-face {
+  font-family: 'Futura';
+  src: url('/typography/futura.woff2') format('woff2');
+}
+
+:root {
+  color-scheme: light dark;
+  font-size: 62.5%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  interpolate-size: allow-keywords;
+  --max-width: 1000px;
+  --space-1: clamp(0.3125rem, 0.3125rem + 0vw, 0.3125rem);
+  --space-2: clamp(0.5625rem, 0.5369rem + 0.1136vw, 0.625rem);
+  --space-3: clamp(0.875rem, 0.8494rem + 0.1136vw, 0.9375rem);
+  --space-4: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem);
+  --space-5: clamp(1.6875rem, 1.6108rem + 0.3409vw, 1.875rem);
+  --space-6: clamp(2.25rem, 2.1477rem + 0.4545vw, 2.5rem);
+  --space-7: clamp(3.375rem, 3.2216rem + 0.6818vw, 3.75rem);
+  --space-8: clamp(4.5rem, 4.2955rem + 0.9091vw, 5rem);
+  --space-9: clamp(6.75rem, 6.4432rem + 1.3636vw, 7.5rem);
+  --font-1: clamp(0.7813rem, 0.7736rem + 0.0341vw, 0.8rem);
+  --font-2: clamp(0.9375rem, 0.9119rem + 0.1136vw, 1rem);
+  --font-3: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem);
+  --font-4: clamp(1.35rem, 1.2631rem + 0.3864vw, 1.5625rem);
+  --font-5: clamp(1.62rem, 1.4837rem + 0.6057vw, 1.9531rem);
+  --font-6: clamp(1.944rem, 1.7405rem + 0.9044vw, 2.4414rem);
+  --font-7: clamp(2.3328rem, 2.0387rem + 1.3072vw, 3.0518rem);
+  --font-8: clamp(2.7994rem, 2.384rem + 1.8461vw, 3.8147rem);
+
+  // --c-ink: rgba(250, 250, 250, 1);
+  // --c-paper: rgba(5, 5, 5, 1);
+  --c-ink: rgba(5, 5, 5, 1);
+  --c-paper: rgba(250, 250, 250, 1);
+}
+
+:is(*, ::before, ::after) {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+html {
+  hanging-punctuation: first last;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: light-dark(var(--c-ink), var(--c-paper));
+  color: light-dark(var(--c-paper), var(--c-ink));
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  scrollbar-gutter: auto;
+  scrollbar-gutter: stable;
+}
+
+:is(img, svg, picture, video) {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol,
+li {
+  list-style: none;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[disabled] {
+    cursor: default;
+  }
+}
