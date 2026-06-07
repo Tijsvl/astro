@@ -1,16 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const columnCount = 3;
+const columnCount = 2;
 
-const imageSizes = [
-  { width: 400, height: 500 },
-  { width: 400, height: 500 },
-  { width: 1280, height: 720 }
-];
-
-const shuffle = (items: string[]) => {
+const shuffle = (items: string[], shouldShuffle = true) => {
   const array = [...items];
+
+  if (!shouldShuffle) {
+    return array;
+  }
 
   for (let index = array.length - 1; index > 0; index -= 1) {
     const randomIndex = Math.floor(Math.random() * (index + 1));
@@ -20,20 +18,22 @@ const shuffle = (items: string[]) => {
   return array;
 };
 
-const alphabet = shuffle('abcdefghijklmnopqrstuvwxyz'.split(''));
-const photosPerColumn = Math.ceil(alphabet.length / columnCount);
-
-const buildPhoto = (seed: string) => {
-  const size = imageSizes[Math.floor(Math.random() * imageSizes.length)];
-
-  return `https://picsum.photos/seed/${seed}/${size.width}/${size.height}`;
-};
+const galleryPhotos = Object.values(import.meta.glob('/public/gallery/*.{jpg,jpeg,png}', { eager: true })) as Array<{
+  default: string | { src?: string };
+}>;
+const photos = shuffle(
+  galleryPhotos
+    .map((entry) => (typeof entry.default === 'string' ? entry.default : entry.default?.src))
+    .filter((src): src is string => Boolean(src)),
+  true
+);
+const photosPerColumn = Math.ceil(photos.length / columnCount);
 
 const columns = Array.from({ length: columnCount }, (_, columnIndex) => {
   const start = columnIndex * photosPerColumn;
   const end = start + photosPerColumn;
 
-  return alphabet.slice(start, end).map((seed) => ({ seed, src: buildPhoto(seed) }));
+  return photos.slice(start, end).map((src) => ({ src }));
 });
 ---
 
@@ -42,8 +42,8 @@ const columns = Array.from({ length: columnCount }, (_, columnIndex) => {
     {
       columns.map((column) => (
         <section class='column'>
-          {column.map(({ seed, src }) => (
-            <img src={src} alt={`Random photo seed ${seed}`} />
+          {column.map(({ src }) => (
+            <img src={src} alt='Gallery photo' />
           ))}
         </section>
       ))

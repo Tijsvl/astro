@@ -1,12 +1,30 @@
 @font-face {
   font-family: 'Futura';
-  src: url('/typography/futura.woff2') format('woff2');
+  src: url('/fonts/FuturaBook.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura';
+  src: url('/fonts/FuturaDemi.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura';
+  src: url('/fonts/FuturaBold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
 :root {
   color-scheme: light dark;
   font-size: 62.5%;
-  min-height: 100vh;
   min-height: 100dvh;
   interpolate-size: allow-keywords;
   --max-width: 1000px;
@@ -27,6 +45,9 @@
   --font-6: clamp(1.944rem, 1.7405rem + 0.9044vw, 2.4414rem);
   --font-7: clamp(2.3328rem, 2.0387rem + 1.3072vw, 3.0518rem);
   --font-8: clamp(2.7994rem, 2.384rem + 1.8461vw, 3.8147rem);
+  --font-9: clamp(3.3592rem, 2.7828rem + 2.5621vw, 4.7684rem);
+  --font-10: clamp(4.0311rem, 3.2418rem + 3.508vw, 5.9605rem);
+  --font-11: clamp(4.8373rem, 3.7682rem + 4.7514vw, 7.4506rem);
 
   // --c-ink: rgba(250, 250, 250, 1);
   // --c-paper: rgba(5, 5, 5, 1);
@@ -47,11 +68,12 @@
 
 html {
   hanging-punctuation: first last;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Futura', Arial, Helvetica, sans-serif;
   min-height: 100vh;
   min-height: 100dvh;
   background-color: light-dark(var(--c-ink), var(--c-paper));
   color: light-dark(var(--c-paper), var(--c-ink));
+  font-weight: 100;
 }
 
 body {
@@ -64,6 +86,21 @@ body {
 :is(img, svg, picture, video) {
   display: block;
   max-width: 100%;
+}
+
+h1 {
+  font-size: var(--font-11);
+}
+
+h2 {
+  font-size: var(--font-3);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+  font-weight: 600;
+}
+
+p {
+  font-size: var(--font-4);
 }
 
 ul,

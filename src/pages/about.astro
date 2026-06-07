@@ -3,6 +3,37 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
-  <h1>About</h1>
-  <p>This is the about page.</p>
+  <article>
+    <h1>Hey! I'm Tijs</h1>
+    <section>
+      <div>
+        <img src='/images/tijs.jpg' alt='Tijs' />
+      </div>
+
+      <div>
+        <h2>A bit about me</h2>
+        <p>
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aut eveniet id dolorum ipsa quidem repellendus est non atque
+          fugit, cumque numquam ullam qui voluptate nobis amet nesciunt temporibus consectetur. Animi officiis quo doloribus
+          deserunt modi recusandae reiciendis veniam molestias dolore? Ullam sit impedit asperiores molestias repudiandae saepe.
+          Ab praesentium saepe obcaecati consequuntur iure, velit sapiente aspernatur impedit adipisci molestiae reprehenderit.
+          Dolorum nemo voluptas enim.
+        </p>
+      </div>
+    </section>
+  </article>
+
+  <style lang='scss'>
+    article {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+  </style>
 </Layout>
