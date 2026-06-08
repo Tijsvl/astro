@@ -1,0 +1,43 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { galleries, unixToDate, slug } from '../../../../data/galleries.ts';
+
+export async function getStaticPaths() {
+  return galleries.map((gallery) => ({
+    params: {
+      artist: slug(gallery.name),
+      venue: slug(gallery.venue),
+      date: unixToDate(gallery.date)
+    }
+  }));
+}
+
+const { params } = Astro;
+const gallery = galleries.find((item) => {
+  return slug(item.name) === params.artist && slug(item.venue) === params.venue && unixToDate(item.date) === params.date;
+});
+---
+
+<Layout>
+  {
+    gallery ? (
+      <>
+        <h1>{gallery.name}</h1>
+        <p>
+          <strong>Venue:</strong> {gallery.venue}
+        </p>
+        <p>
+          <strong>Date:</strong> {unixToDate(gallery.date)}
+        </p>
+        <p>
+          <strong>Location:</strong> {gallery.city}, {gallery.country}
+        </p>
+        <p>
+          <a href='/galleries'>Back to galleries</a>
+        </p>
+      </>
+    ) : (
+      <p>Gallery not found.</p>
+    )
+  }
+</Layout>

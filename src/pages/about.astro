@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '@layouts/Layout.astro';
 ---
 
 <Layout>
@@ -32,7 +32,7 @@ import Layout from '../layouts/Layout.astro';
 
     section {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 320px) minmax(50%, 1fr);
       gap: var(--space-5);
     }
   </style>

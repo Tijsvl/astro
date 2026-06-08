@@ -1,5 +1,5 @@
 ---
-import Logo from './Logo.astro';
+import Logo from '@svg/Logo.astro';
 ---
 
 <nav>
@@ -9,6 +9,7 @@ import Logo from './Logo.astro';
       <li><a href='/photo'>Photo</a></li>
       <li><a href='/video'>Video</a></li>
       <li><a href='/about'>About</a></li>
+      <li><a href='/galleries'>Galleries</a></li>
       <li><a href='/contact'>Contact</a></li>
     </li>
   </ul>
@@ -28,9 +29,15 @@ import Logo from './Logo.astro';
     font-size: var(--font-5);
   }
 
+  li:first-child a {
+    text-transform: uppercase;
+    font-size: var(--font-7);
+    font-weight: 600;
+  }
+
   li:not(:first-child) {
     [aria-current] {
-      font-weight: 600;
+      font-weight: 500;
     }
 
     a:hover {
@@ -50,8 +57,22 @@ import Logo from './Logo.astro';
   }
 </style>
 
+<style lang='scss' is:global>
+  .logo {
+    #svg-logo {
+      height: 1.1em;
+      transition: transform 1s ease-out;
+    }
+
+    &:hover #svg-logo {
+      transform: rotateY(-360deg);
+    }
+  }
+</style>
+
 <script>
   const { pathname } = window.location;
-  const currentPage = document.querySelector(`nav a[href="${pathname}"]`);
+  const toplevel = '/' + pathname.split('/')[1];
+  const currentPage = document.querySelector(`nav a[href^="${toplevel}"]`);
   currentPage?.setAttribute('aria-current', 'page');
 </script>

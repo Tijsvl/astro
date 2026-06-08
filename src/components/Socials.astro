@@ -1,0 +1,50 @@
+---
+import InstagramSolid from '@svg/InstagramSolid.astro';
+import BeerSolid from '@svg/BeerSolid.astro';
+import UnsplashSolid from '@svg/UnsplashSolid.astro';
+import BackToTop from '@components/BackToTop.astro';
+---
+
+<aside>
+  <a href='//instagram.com/tijsvl' target='_blank'><InstagramSolid /></a>
+  <a href='//unsplash.com/@tijsvl' target='_blank'><UnsplashSolid /></a>
+  <a href='/beer'><BeerSolid /></a>
+  <BackToTop />
+</aside>
+
+<style>
+  a {
+    color: inherit;
+    display: flex;
+    width: 2.4rem;
+    height: 2.4rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  aside {
+    position: fixed;
+    bottom: 3rem;
+    right: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    @media screen and (width < 1140px) {
+      display: none;
+    }
+  }
+</style>
+
+<style is:global>
+  aside {
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    button {
+      margin-top: 1.5rem;
+    }
+  }
+</style>

@@ -1,8 +1,111 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '@layouts/Layout.astro';
+import { galleries, galleryUrl, unixToDate } from '../data/galleries.ts';
+
+const url = galleryUrl;
 ---
 
 <Layout>
   <h1>Galleries</h1>
-  <p>This is the galleries page.</p>
+  <table>
+    <thead>
+      <th>Artist</th>
+      <th>Venue</th>
+      <th>Date</th>
+      <th>City</th>
+      <th>Country</th>
+    </thead>
+    <tbody>
+      {
+        galleries.map((gallery) => (
+          <tr>
+            <td>
+              <a href={url(gallery)} aria-label={gallery.name} />
+              {gallery.name}
+            </td>
+            <td>{gallery.venue}</td>
+            <td>{unixToDate(gallery.date)}</td>
+            <td>{gallery.city}</td>
+            <td>{gallery.country}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
 </Layout>
+
+<style lang='scss'>
+  table {
+    // width: calc(100% + (var(--page-spacing) * 2));
+    width: 100%;
+    font-size: var(--font-4);
+    border-spacing: 0;
+    // margin-inline: calc(var(--page-spacing) * -1);
+
+    th {
+      font-weight: 600;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding-inline: calc(var(--page-spacing) / 2);
+      padding-block: var(--space-1);
+
+      // &:first-of-type {
+      //   padding-left: var(--page-spacing);
+      // }
+
+      // &:last-of-type {
+      //   padding-right: var(--page-spacing);
+      // }
+    }
+
+    th {
+      padding-top: 0;
+    }
+
+    tr {
+      isolation: isolate;
+      position: relative;
+
+      // TODO: Make the effect work when hovering from both top and bottom so that it looks like a nice flow
+      &::after {
+        --_light: rgb(from currentColor r g b / 0.05);
+        --_dark: rgb(from currentColor r g b / 0.1);
+        background-color: light-dark(var(--_light), var(--_dark));
+        content: '';
+        position: absolute;
+        height: 1px;
+        inset: auto calc(var(--page-spacing) / 2) 0;
+        transition:
+          height 0.2s ease-in-out,
+          inset 0.1s ease-in-out;
+        z-index: -1;
+      }
+
+      &:hover {
+        &::after {
+          content: '';
+          position: absolute;
+          height: 100%;
+          inset: auto calc(var(--page-spacing) * -1) 0;
+          transition:
+            height 0.4s ease-in-out,
+            inset 0.2s ease-in-out;
+        }
+      }
+
+      a {
+        position: absolute;
+        inset: 0;
+      }
+    }
+
+    td {
+      border-bottom: 1px solid rgba(0 0 0 / 0);
+    }
+  }
+</style>
+
+<script></script>

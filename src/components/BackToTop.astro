@@ -1,0 +1,45 @@
+<button data-identifier='back-to-top'>&#8593; <span>Back To Top</span></button>
+
+<style>
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: transparent;
+    min-width: 24px;
+  }
+
+  span {
+    writing-mode: vertical-rl;
+  }
+</style>
+
+<style is:global>
+  button {
+    opacity: 0;
+    animation-name: fadeIn;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root block);
+    animation-range: 0px 1500px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll('[data-identifier=back-to-top]') as NodeListOf<HTMLButtonElement>;
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => window.scrollTo(0, 0));
+  });
+</script>
