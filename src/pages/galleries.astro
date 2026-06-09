@@ -1,8 +1,37 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import { galleries, galleryUrl, unixToDate } from '../data/galleries.ts';
+import { db } from '@firebase/firebase.server';
+import { galleryUrl, unixToDate, type Gallery } from '../data/galleries.ts';
+import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
 
-const url = galleryUrl;
+type GalleryDocument = {
+  artist: string;
+  date: GalleryDateInput;
+  venue: string;
+  city: string;
+  country: string;
+};
+
+const galleries: Gallery[] = [];
+
+const querySnapshot = await db.collection('galleries').get();
+
+querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
+  const { artist, date, venue, city, country } = doc.data() as GalleryDocument;
+  const unixDate = galleryDateToUnix(date);
+
+  galleries.push({
+    name: artist,
+    date: unixDate,
+    venue,
+    city,
+    country
+  });
+});
+
+galleries.sort((left, right) => right.date - left.date);
+
+console.log(galleries[0]);
 ---
 
 <Layout>
@@ -20,7 +49,7 @@ const url = galleryUrl;
         galleries.map((gallery) => (
           <tr>
             <td>
-              <a href={url(gallery)} aria-label={gallery.name} />
+              <a href={galleryUrl(gallery)} aria-label={gallery.name} />
               {gallery.name}
             </td>
             <td>{gallery.venue}</td>

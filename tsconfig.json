@@ -5,7 +5,8 @@
   "compilerOptions": {
     "paths": {
       "@components/*": ["./src/components/*"],
-      "@utils/*": ["./src/utils/*"],
+      "@utils/*": ["./src/lib/utils/*"],
+      "@firebase/*": ["./src/lib/firebase/*"],
       "@styles/*": ["./src/styles/*"],
       "@layouts/*": ["./src/layouts/*"],
       "@svg/*": ["./src/svg/*"]

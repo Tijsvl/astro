@@ -1,4 +1,4 @@
-@import './typography.scss';
+@use './typography.scss';
 
 :root {
   color-scheme: light dark;
@@ -55,13 +55,13 @@ html {
   color: light-dark(var(--c-paper), var(--c-ink));
   min-height: 100vh;
   min-height: 100dvh;
+  scrollbar-gutter: auto;
+  scrollbar-gutter: stable;
 }
 
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  scrollbar-gutter: auto;
-  scrollbar-gutter: stable;
 }
 
 :is(img, svg, picture, video) {

@@ -1,4 +1,4 @@
-import { slug } from '../utils/slug.js';
+import { slug } from '@utils/slug.js';
 
 export { slug };
 

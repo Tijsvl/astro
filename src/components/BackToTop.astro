@@ -9,15 +9,6 @@
     gap: var(--space-3);
     background: transparent;
     min-width: 24px;
-  }
-
-  span {
-    writing-mode: vertical-rl;
-  }
-</style>
-
-<style is:global>
-  button {
     opacity: 0;
     animation-name: fadeIn;
     animation-duration: 1s;
@@ -25,6 +16,14 @@
     animation-fill-mode: both;
     animation-timeline: scroll(root block);
     animation-range: 0px 1500px;
+
+    &:hover span {
+      text-decoration: underline;
+    }
+  }
+
+  span {
+    writing-mode: vertical-rl;
   }
 
   @keyframes fadeIn {

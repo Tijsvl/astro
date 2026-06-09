@@ -15,7 +15,8 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+src/lib/firebase/firebase-secrets.server.json
 
 # macOS-specific files
 .DS_Store

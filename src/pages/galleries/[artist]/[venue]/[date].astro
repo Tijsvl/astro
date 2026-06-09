@@ -1,20 +1,53 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import { galleries, unixToDate, slug } from '../../../../data/galleries.ts';
+import { db } from '@firebase/firebase.server';
+import { unixToDate, slug } from '../../../../data/galleries.ts';
+import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
+
+type GalleryDocument = {
+  artist: string;
+  date: GalleryDateInput;
+  venue: string;
+  city: string;
+  country: string;
+};
+
+const fetchGalleries = async () => {
+  const querySnapshot = await db.collection('galleries').get();
+  const galleries: GalleryDocument[] = [];
+
+  querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
+    galleries.push(doc.data());
+  });
+
+  return galleries;
+};
 
 export async function getStaticPaths() {
-  return galleries.map((gallery) => ({
+  const querySnapshot = await db.collection('galleries').get();
+  const galleries: GalleryDocument[] = [];
+
+  querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
+    galleries.push(doc.data());
+  });
+
+  return galleries.map((gallery: GalleryDocument) => ({
     params: {
-      artist: slug(gallery.name),
+      artist: slug(gallery.artist),
       venue: slug(gallery.venue),
-      date: unixToDate(gallery.date)
+      date: unixToDate(galleryDateToUnix(gallery.date))
     }
   }));
 }
 
 const { params } = Astro;
-const gallery = galleries.find((item) => {
-  return slug(item.name) === params.artist && slug(item.venue) === params.venue && unixToDate(item.date) === params.date;
+const galleries = await fetchGalleries();
+const gallery = galleries.find((item: GalleryDocument) => {
+  return (
+    slug(item.artist) === params.artist &&
+    slug(item.venue) === params.venue &&
+    unixToDate(galleryDateToUnix(item.date)) === params.date
+  );
 });
 ---
 
@@ -22,12 +55,12 @@ const gallery = galleries.find((item) => {
   {
     gallery ? (
       <>
-        <h1>{gallery.name}</h1>
+        <h1>{gallery.artist}</h1>
         <p>
           <strong>Venue:</strong> {gallery.venue}
         </p>
         <p>
-          <strong>Date:</strong> {unixToDate(gallery.date)}
+          <strong>Date:</strong> {unixToDate(galleryDateToUnix(gallery.date))}
         </p>
         <p>
           <strong>Location:</strong> {gallery.city}, {gallery.country}
