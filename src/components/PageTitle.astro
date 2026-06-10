@@ -1,0 +1,67 @@
+---
+interface Props {
+  scale?: boolean;
+}
+
+const { scale } = Astro.props as Props;
+---
+
+<h1 id='page-title' {...scale ? { 'data-scale': '' } : {}}>
+  {
+    scale ? (
+      <>
+        <span>
+          <slot />
+        </span>
+        <span>
+          <slot />
+        </span>
+      </>
+    ) : (
+      <slot />
+    )
+  }
+</h1>
+
+<style lang='scss'>
+  h1[data-scale] {
+    --_base: 10px;
+    font-size: var(--_base);
+    position: relative;
+    max-width: var(--max-width);
+
+    span:first-child {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: rgb(0 0 0 / 0);
+      user-select: none;
+    }
+
+    span:last-child {
+      display: block;
+      font-size: calc(var(--_base) * min(var(--_scale), 20));
+      width: max-content;
+    }
+  }
+</style>
+
+<script>
+  const mainEl = document.querySelector('main') as HTMLElement;
+  const titleEl = document.querySelector('#page-title') as HTMLHeadingElement;
+  const textEls = titleEl.querySelectorAll('span') as NodeListOf<HTMLSpanElement>;
+
+  const calculateScale = () => {
+    const mainWidth = mainEl.offsetWidth;
+    const textElWidth = textEls[0].offsetWidth;
+    const scale = mainWidth / textElWidth;
+
+    titleEl.style.setProperty('--_scale', scale.toFixed(5));
+  };
+
+  if (titleEl.hasAttribute('data-scale')) {
+    console.log('hey');
+    window.addEventListener('resize', calculateScale);
+    calculateScale();
+  }
+</script>

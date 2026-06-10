@@ -1,5 +1,6 @@
 ---
 import Layout from '@layouts/Layout.astro';
+import PageTitle from '@components/PageTitle.astro';
 import { db } from '@firebase/firebase.server';
 import { galleryUrl, unixToDate, type Gallery } from '../data/galleries.ts';
 import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
@@ -30,12 +31,10 @@ querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
 });
 
 galleries.sort((left, right) => right.date - left.date);
-
-console.log(galleries[0]);
 ---
 
 <Layout>
-  <h1>Galleries</h1>
+  <PageTitle>Galleries</PageTitle>
   <table>
     <thead>
       <th>Artist</th>

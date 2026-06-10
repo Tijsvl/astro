@@ -1,0 +1,352 @@
+---
+type MasonryImage = {
+  file: string;
+  type?: string;
+  aspectRatio: string;
+};
+
+interface Props {
+  images?: MasonryImage[];
+  artistSlug?: string;
+  citySlug?: string;
+  date?: string;
+  title: string;
+}
+
+const { images = [], title, artistSlug, citySlug, date } = Astro.props as Props;
+const masonryImages = images.filter((image) => !image.type || image.type === 'image');
+
+const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${date}`;
+---
+
+<section data-masonry>
+  <div>
+    {
+      masonryImages.map((item) => (
+        <div data-masonry-item style={`--a: ${item.aspectRatio ?? '1'}`}>
+          <figure>
+            <picture>
+              <source srcset={`${prefix}/${item.file.replace('.jpg', '_medium.jpg')}`} media='(min-width: 330px)' />
+              <source srcset={`${prefix}/${item.file.replace('.jpg', '_small.jpg')}`} media='(min-width: 115px)' />
+              <img
+                src={`${prefix}/${item.file.replace('.jpg', '_medium.jpg')}`}
+                alt={title}
+                style={`--a: ${item.aspectRatio ?? '1'}`}
+                loading='lazy'
+              />
+            </picture>
+
+            <figcaption>{title}</figcaption>
+          </figure>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // @ts-nocheck
+
+  /**
+   * @param {() => void} fn
+   * @param {number} wait
+   */
+  const debounce = (fn, wait) => {
+    /** @type {ReturnType<typeof window.setTimeout> | undefined} */
+    let timeoutId;
+
+    return () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+
+      timeoutId = window.setTimeout(fn, wait);
+    };
+  };
+
+  let masonryResizeHandlerAttached = false;
+
+  /**
+   * @param {HTMLElement} masonryContainer
+   */
+  const initMasonry = (masonryContainer) => {
+    /** @type {HTMLElement | null} */
+    const masonry = masonryContainer.firstElementChild;
+
+    if (!masonry) {
+      return;
+    }
+
+    const initialized = masonryContainer.getAttribute('data-masonry') === 'initialized';
+    /** @type {HTMLElement | null} */
+    let masonryShadow = masonryContainer.querySelector('[masonry-shadow]');
+
+    if (!initialized) {
+      masonryShadow = masonry.cloneNode(true);
+      masonryShadow.setAttribute('masonry-shadow', '');
+      masonryShadow.setAttribute('aria-hidden', 'true');
+      masonryContainer.appendChild(masonryShadow);
+    }
+
+    if (!masonryShadow) {
+      return;
+    }
+
+    masonry.setAttribute('masonry-view', '');
+
+    const xStart = masonry.getBoundingClientRect().left;
+    const yStart = masonry.offsetTop;
+    const masonryWidth = masonry.clientWidth;
+    /** @type {HTMLElement[]} */
+    const masonryItems = [...masonry.querySelectorAll(':scope [data-masonry-item]')];
+
+    masonryItems.forEach((el, key) => {
+      el.setAttribute('masonry-id', `id_${key + 1}`);
+      el.style.setProperty('--d', String(key + 1));
+    });
+
+    /** @type {{ element: HTMLElement; y: number }[]} */
+    const shadowItems = [];
+    /** @type {HTMLElement[]} */
+    const masonryShadowItems = [...masonryShadow.querySelectorAll(':scope [data-masonry-item]')];
+
+    masonryShadowItems.forEach((el, key) => {
+      el.style.removeProperty('--p');
+      el.setAttribute('masonry-id', `id_${key + 1}`);
+      shadowItems.push({ element: el, y: el.offsetTop - yStart });
+    });
+
+    if (!shadowItems.length) {
+      masonryContainer.setAttribute('data-masonry', 'initialized');
+      masonry.style.setProperty('--h', `${masonryShadow.clientHeight}px`);
+      return;
+    }
+
+    /** @type {{ element: HTMLElement; y: number }[][]} */
+    const rows = [];
+    const filterRows = () => {
+      const currentRow = shadowItems.filter((row) => row.y === shadowItems[0].y);
+      rows.push(currentRow);
+      shadowItems.splice(0, currentRow.length);
+
+      if (shadowItems.length > 0) {
+        filterRows();
+      }
+    };
+
+    filterRows();
+
+    rows.forEach((row, idx) => {
+      const isLastRow = rows.length - 1 === idx;
+      const xEnd = Math.ceil(row[row.length - 1].element.getBoundingClientRect().right);
+      const rowWidth = xEnd - xStart;
+      let difference = +(masonryWidth / rowWidth).toFixed(5);
+
+      if (isLastRow) {
+        difference = difference > 1.5 ? 1.5 : difference;
+      }
+
+      row.forEach((item, key) => {
+        const { element } = item;
+        const isLast = row.length - 1 === key;
+        element.style.setProperty('--p', String(difference));
+
+        const viewItem = [...masonryItems].find(
+          (item) => item.getAttribute('masonry-id') === element.getAttribute('masonry-id')
+        );
+
+        if (viewItem) {
+          const x = (element.getBoundingClientRect().x - xStart).toFixed(2);
+          const y = (element.offsetTop - yStart).toFixed(2);
+          let w = `${element.clientWidth}px`;
+          const h = `${element.clientHeight}px`;
+
+          if (!isLast) {
+            viewItem.removeAttribute('masonry-last');
+          } else if (!isLastRow) {
+            viewItem.setAttribute('masonry-last', '');
+            viewItem.style.setProperty('--r', '0');
+            w = 'auto';
+          }
+
+          viewItem.style.setProperty('--x', `${x}px`);
+          viewItem.style.setProperty('--y', `${y}px`);
+          viewItem.style.setProperty('--w', w);
+          viewItem.style.setProperty('--h', h);
+        }
+      });
+    });
+
+    masonry.style.setProperty('--h', `${masonryShadow.clientHeight}px`);
+    masonryContainer.setAttribute('data-masonry', 'initialized');
+  };
+
+  const initAllMasonry = () => {
+    document.querySelectorAll('[data-masonry]').forEach((masonryContainer) => {
+      initMasonry(masonryContainer);
+    });
+  };
+
+  const onReady = () => {
+    initAllMasonry();
+
+    if (!masonryResizeHandlerAttached) {
+      masonryResizeHandlerAttached = true;
+      window.addEventListener('resize', debounce(initAllMasonry, 100));
+    }
+  };
+
+  if (document.readyState === 'complete') {
+    onReady();
+  } else {
+    window.addEventListener('load', onReady, { once: true });
+  }
+
+  document.addEventListener('astro:page-load', initAllMasonry);
+</script>
+
+<style lang='scss'>
+  section {
+    isolation: isolate;
+  }
+
+  :global([data-masonry]) {
+    --_size: 320px;
+    --_size: 15vw;
+    --_gap: 0.5rem;
+    --_transition-duration: 2.4s;
+    --_transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
+    --_animation-delay: 100ms;
+
+    position: relative;
+    margin-block: 50px;
+    padding-inline: var(--_gap);
+    visibility: hidden;
+
+    &:has([masonry-shadow]) {
+      visibility: visible;
+    }
+
+    @media (max-width: 1280px) {
+      --_size: 17.5vw;
+    }
+
+    @media (max-width: 1000px) {
+      --_size: 20vw;
+    }
+
+    @media (max-width: 768px) {
+      --_size: 25vw;
+    }
+
+    @media (max-width: 640px) {
+      --_size: 35vw;
+    }
+
+    :global([masonry-view] [data-masonry-item]),
+    :global([masonry-shadow] [data-masonry-item]) {
+      height: calc(var(--_size) * var(--p, 1));
+      position: relative;
+    }
+
+    figure {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    :global([masonry-view]) {
+      opacity: 1;
+      transform: translateY(-5vw);
+      animation: slideIn;
+      animation-duration: var(--_transition-duration);
+      animation-fill-mode: forwards;
+      width: 100%;
+
+      > [data-masonry-item] {
+        position: absolute;
+        top: var(--y, 20px);
+        left: var(--x, 20px);
+        right: var(--r, auto);
+        width: var(--w, 20px);
+        height: var(--h, 20px);
+        transition:
+          top var(--_transition-duration) var(--_transition-timing),
+          left calc(var(--_transition-duration) / 2) var(--_transition-timing);
+        animation: fadeIn;
+        animation-duration: var(--_transition-duration);
+        animation-fill-mode: forwards;
+        animation-delay: calc(var(--d, 1) * var(--_animation-delay) / 4);
+        opacity: 0.01;
+
+        &::before {
+          content: '';
+          display: block;
+          position: absolute;
+          inset: calc(var(--_gap) * -1);
+          background-color: rgba(255, 255, 255, 1);
+          pointer-events: none;
+          z-index: -1;
+        }
+
+        img {
+          transition: filter 0.15s ease-in-out;
+          will-change: filter;
+        }
+
+        &:hover img {
+          filter: brightness(1.5);
+        }
+      }
+
+      img {
+        opacity: 1;
+        aspect-ratio: var(--a, auto);
+      }
+
+      figcaption {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+      }
+    }
+
+    :global([masonry-shadow]) {
+      user-select: none;
+      pointer-events: none;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: var(--j, flex-start);
+      gap: var(--_gap);
+      visibility: hidden;
+
+      img {
+        display: none;
+      }
+
+      > [data-masonry-item] {
+        aspect-ratio: var(--a, auto);
+      }
+    }
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    to {
+      transform: translateY(0);
+    }
+  }
+</style>

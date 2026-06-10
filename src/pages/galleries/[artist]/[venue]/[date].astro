@@ -1,76 +1,37 @@
 ---
+import { fetchGalleries } from '@utils/fetchGalleries';
+import { fetchPhotos } from '@utils/fetchPhotos';
 import Layout from '@layouts/Layout.astro';
-import { db } from '@firebase/firebase.server';
-import { unixToDate, slug } from '../../../../data/galleries.ts';
-import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
-
-type GalleryDocument = {
-  artist: string;
-  date: GalleryDateInput;
-  venue: string;
-  city: string;
-  country: string;
-};
-
-const fetchGalleries = async () => {
-  const querySnapshot = await db.collection('galleries').get();
-  const galleries: GalleryDocument[] = [];
-
-  querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
-    galleries.push(doc.data());
-  });
-
-  return galleries;
-};
+import Masonry from '@components/Masonry.astro';
+import PageTitle from '@components/PageTitle.astro';
 
 export async function getStaticPaths() {
-  const querySnapshot = await db.collection('galleries').get();
-  const galleries: GalleryDocument[] = [];
+  const galleries = await fetchGalleries();
 
-  querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
-    galleries.push(doc.data());
-  });
-
-  return galleries.map((gallery: GalleryDocument) => ({
+  return galleries.map((gallery) => ({
     params: {
-      artist: slug(gallery.artist),
-      venue: slug(gallery.venue),
-      date: unixToDate(galleryDateToUnix(gallery.date))
+      artist: gallery.artistSlug,
+      venue: gallery.venueSlug,
+      date: gallery.date
+    },
+    props: {
+      gallery
     }
   }));
 }
 
-const { params } = Astro;
-const galleries = await fetchGalleries();
-const gallery = galleries.find((item: GalleryDocument) => {
-  return (
-    slug(item.artist) === params.artist &&
-    slug(item.venue) === params.venue &&
-    unixToDate(galleryDateToUnix(item.date)) === params.date
-  );
-});
+const { artist, artistSlug, venue, venueSlug, city, citySlug, date } = Astro.props.gallery;
+
+const photos = await fetchPhotos({ artist, artistSlug, venue, venueSlug, city, citySlug, date });
+
+console.log(citySlug);
 ---
 
 <Layout>
-  {
-    gallery ? (
-      <>
-        <h1>{gallery.artist}</h1>
-        <p>
-          <strong>Venue:</strong> {gallery.venue}
-        </p>
-        <p>
-          <strong>Date:</strong> {unixToDate(galleryDateToUnix(gallery.date))}
-        </p>
-        <p>
-          <strong>Location:</strong> {gallery.city}, {gallery.country}
-        </p>
-        <p>
-          <a href='/galleries'>Back to galleries</a>
-        </p>
-      </>
-    ) : (
-      <p>Gallery not found.</p>
-    )
-  }
+  <PageTitle scale={true}>{artist}</PageTitle>
+  <p>Artist: {artist}</p>
+  <p>Venue: {venue}</p>
+  <p>Date: {date}</p>
+
+  <Masonry images={photos} citySlug={citySlug} title={artist} artistSlug={artistSlug} date={date} />
 </Layout>
