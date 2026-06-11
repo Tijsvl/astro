@@ -1,21 +1,26 @@
 ---
-interface Props {
+type Props = {
   scale?: boolean;
-}
+  maxFontSize: "small" | "medium" | "large";
+};
 
-const { scale } = Astro.props as Props;
+
+const { scale, maxFontSize } = Astro.props as Props;
+
+
+let fontSize = '120px';
+if (maxFontSize === "small") fontSize = '80px'
+else if (maxFontSize === "medium") fontSize = '120px'
+else if (maxFontSize === "large") fontSize = '175px'
 ---
 
-<h1 id='page-title' {...scale ? { 'data-scale': '' } : {}}>
+<h1 id='page-title' {...scale ? { 'data-scale': '' } : {}}  style=`--_max-font-size:${fontSize}`>
   {
     scale ? (
       <>
-        <span>
-          <slot />
-        </span>
-        <span>
-          <slot />
-        </span>
+        <!-- prettier-ignore -->
+        <span aria-hidden="true"><slot /></span>
+        <span><slot /></span>
       </>
     ) : (
       <slot />
@@ -25,22 +30,25 @@ const { scale } = Astro.props as Props;
 
 <style lang='scss'>
   h1[data-scale] {
-    --_base: 10px;
+    --_base: 5rem;
     font-size: var(--_base);
     position: relative;
     max-width: var(--max-width);
+    margin-bottom: var(--space-3);
 
-    span:first-child {
+      span:first-child {
       position: absolute;
       top: 0;
       left: 0;
       color: rgb(0 0 0 / 0);
       user-select: none;
+      display: block;
+      width: max-content;
     }
 
     span:last-child {
       display: block;
-      font-size: calc(var(--_base) * min(var(--_scale), 20));
+      font-size: min(calc(var(--_base) * var(--_scale)), var(--_max-font-size, 150px));
       width: max-content;
     }
   }
@@ -56,11 +64,10 @@ const { scale } = Astro.props as Props;
     const textElWidth = textEls[0].offsetWidth;
     const scale = mainWidth / textElWidth;
 
-    titleEl.style.setProperty('--_scale', scale.toFixed(5));
+    titleEl.style.setProperty('--_scale', scale.toFixed(3));
   };
 
   if (titleEl.hasAttribute('data-scale')) {
-    console.log('hey');
     window.addEventListener('resize', calculateScale);
     calculateScale();
   }

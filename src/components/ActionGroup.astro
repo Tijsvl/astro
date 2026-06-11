@@ -1,0 +1,109 @@
+---
+import ShareIcon from '@svg/ShareIcon.astro';
+import Beer from '@svg/Beer.astro';
+import EmailIcon from '@svg/EmailIcon.astro';
+import FacebookIcon from '@svg/FacebookIcon.astro';
+import WhatsappIcon from '@svg/WhatsappIcon.astro';
+import LinkIcon from '@svg/LinkIcon.astro';
+---
+
+<div class='action-group'>
+  <div class='share' data-share>
+    <button class='action' aria-controls='share-actions' aria-expanded='false'>
+      <ShareIcon />
+      <span>Share Gallery</span>
+    </button>
+    <ul id='share-actions' aria-hidden='true'>
+      <li><a href='#' target='_blank' data-share-email><EmailIcon /> E-mail</a></li>
+      <li><a href='#' target='_blank' data-share-facebook><FacebookIcon /> Facebook</a></li>
+      <li><a href='#' target='_blank' data-share-whatsapp><WhatsappIcon /> Whatsapp</a></li>
+      <li><button data-share-copy><LinkIcon /> Copy Link</button></li>
+    </ul>
+  </div>
+  <div class='beer'>
+    <a class='action' href='/beer'><Beer /> Buy Me A Beer</a>
+  </div>
+</div>
+
+<style lang='scss'>
+  .action-group {
+    display: flex;
+    gap: var(--space-5);
+    margin-block: var(--space-4);
+    align-items: center;
+
+    .action {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--color-ink);
+      font-size: var(--font-3);
+    }
+  }
+
+  .share {
+    position: relative;
+  }
+
+  ul {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 100%;
+    width: max-content;
+    background-color: #fff;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    z-index: 1;
+    border: 1px solid black;
+    font-size: 1.25rem;
+
+    &[aria-hidden='true'] {
+      display: none;
+    }
+  }
+
+  li :is(a, button) {
+    --icon-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    > svg {
+      width: 20px;
+    }
+  }
+</style>
+
+<script>
+  const location = window.location.href;
+  const pageTitle = document.querySelector('h1')?.textContent;
+
+  const emailEl = document.querySelector('[data-share-email]') as HTMLAnchorElement;
+  emailEl.href = 'mailto:?subject=Tijsvl | ' + pageTitle + '&body=' + location;
+
+  const facebookEl = document.querySelector('[data-share-facebook]') as HTMLAnchorElement;
+  facebookEl.href = 'https://www.facebook.com/sharer.php?u=' + location;
+
+  const whatsappEl = document.querySelector('[data-share-whatsapp]') as HTMLAnchorElement;
+  whatsappEl.href = 'https://api.whatsapp.com/send?text=' + location;
+
+  const shareActionEls = document.querySelectorAll('[data-share]') as NodeListOf<HTMLDivElement>;
+
+  console.log(shareActionEls);
+
+  shareActionEls.forEach((el) => {
+    const button = el.querySelector('button') as HTMLButtonElement;
+    const ul = el.querySelector('ul') as HTMLUListElement;
+
+    button?.addEventListener('click', () => {
+      const isOpening = button.ariaExpanded === 'false';
+
+      button.setAttribute('aria-expanded', String(isOpening));
+      ul.setAttribute('aria-hidden', String(!isOpening));
+    });
+  });
+</script>

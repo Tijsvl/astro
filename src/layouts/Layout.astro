@@ -1,6 +1,5 @@
 ---
 import Header from '@components/Header.astro';
-import Footer from '@components/Footer.astro';
 import Socials from '@components/Socials.astro';
 import '../styles/global.scss';
 ---
@@ -19,9 +18,9 @@ import '../styles/global.scss';
     <Header />
     <main>
       <slot />
-      <Socials />
+      <Socials as='aside' />
     </main>
-    <Footer />
+    <Socials as='footer' />
   </body>
 </html>
 

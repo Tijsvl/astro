@@ -1,6 +1,6 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import PageTitle from '@components/PageTitle.astro';
+import H1 from '@components/H1.astro';
 import { db } from '@firebase/firebase.server';
 import { galleryUrl, unixToDate, type Gallery } from '../data/galleries.ts';
 import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
@@ -34,7 +34,7 @@ galleries.sort((left, right) => right.date - left.date);
 ---
 
 <Layout>
-  <PageTitle>Galleries</PageTitle>
+  <H1>Galleries</H1>
   <table>
     <thead>
       <th>Artist</th>

@@ -3,17 +3,58 @@ import InstagramSolid from '@svg/InstagramSolid.astro';
 import BeerSolid from '@svg/BeerSolid.astro';
 import UnsplashSolid from '@svg/UnsplashSolid.astro';
 import BackToTop from '@components/BackToTop.astro';
+
+type Props = {
+  as: 'footer' | 'aside';
+};
+
+const { as: As } = Astro.props as Props;
 ---
 
-<aside>
-  <a href='//instagram.com/tijsvl' target='_blank'><InstagramSolid /></a>
-  <a href='//unsplash.com/@tijsvl' target='_blank'><UnsplashSolid /></a>
-  <a href='/beer'><BeerSolid /></a>
-  <BackToTop />
-</aside>
+<As>
+  <div class='flex icons'>
+    <a href='//instagram.com/tijsvl' target='_blank'><InstagramSolid /></a>
+    <a href='//unsplash.com/@tijsvl' target='_blank'><UnsplashSolid /></a>
+    <a href='/beer'><BeerSolid /></a>
+    {As === 'aside' && <BackToTop />}
+  </div>
+  {
+    As === 'footer' && (
+      <div class='flex text'>
+        <a href='/contact'>info@tijsvl.net</a> <a href='/copyright'>© Copyright 2026</a>
+      </div>
+    )
+  }
+</As>
 
 <style lang='scss'>
-  a {
+  .flex {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4);
+  }
+
+  aside .icons {
+    position: fixed;
+    bottom: 3rem;
+    right: 2.5rem;
+    flex-direction: column;
+
+    @media screen and (width < 1140px) {
+      display: none;
+    }
+  }
+
+  footer {
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 4rem;
+  }
+
+  .icons a {
     color: inherit;
     display: flex;
     width: 2.4rem;
@@ -27,29 +68,23 @@ import BackToTop from '@components/BackToTop.astro';
     }
   }
 
-  aside {
-    position: fixed;
-    bottom: 3rem;
-    right: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-
-    @media screen and (width < 1140px) {
-      display: none;
-    }
+  .text {
+    font-size: 1.25rem;
   }
 </style>
 
 <style is:global>
+  footer,
   aside {
-    svg {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
+    > div {
+      svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
 
-    button {
-      margin-top: 1.5rem;
+      button {
+        margin-top: 1.5rem;
+      }
     }
   }
 </style>

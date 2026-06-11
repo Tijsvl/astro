@@ -25,7 +25,6 @@ import Logo from '@svg/Logo.astro';
 
   a {
     color: inherit;
-    text-decoration: none;
     font-size: var(--font-5);
   }
 
@@ -33,15 +32,15 @@ import Logo from '@svg/Logo.astro';
     text-transform: uppercase;
     font-size: var(--font-7);
     font-weight: 600;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 
   li:not(:first-child) {
     [aria-current] {
-      font-weight: 500;
-    }
-
-    a:hover {
-      text-decoration: underline;
+      font-weight: 400;
     }
   }
 

@@ -5,15 +5,18 @@ type MasonryImage = {
   aspectRatio: string;
 };
 
-interface Props {
-  images?: MasonryImage[];
-  artistSlug?: string;
-  citySlug?: string;
-  date?: string;
-  title: string;
-}
+type Props = {
+  data: {
+    images?: MasonryImage[];
+    artist: string;
+    artistSlug?: string;
+    citySlug?: string;
+    date?: string;
+  };
+};
 
-const { images = [], title, artistSlug, citySlug, date } = Astro.props as Props;
+const { data } = Astro.props as Props;
+const { images = [], artist, artistSlug, citySlug, date } = data;
 const masonryImages = images.filter((image) => !image.type || image.type === 'image');
 
 const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${date}`;
@@ -30,13 +33,13 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
               <source srcset={`${prefix}/${item.file.replace('.jpg', '_small.jpg')}`} media='(min-width: 115px)' />
               <img
                 src={`${prefix}/${item.file.replace('.jpg', '_medium.jpg')}`}
-                alt={title}
+                alt={artist}
                 style={`--a: ${item.aspectRatio ?? '1'}`}
                 loading='lazy'
               />
             </picture>
 
-            <figcaption>{title}</figcaption>
+            <figcaption>{artist}</figcaption>
           </figure>
         </div>
       ))
@@ -219,8 +222,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     --_animation-delay: 100ms;
 
     position: relative;
-    margin-block: 50px;
-    padding-inline: var(--_gap);
+    margin-block: var(--space-7);
     visibility: hidden;
 
     &:has([masonry-shadow]) {

@@ -1,9 +1,11 @@
 ---
 import { fetchGalleries } from '@utils/fetchGalleries';
 import { fetchPhotos } from '@utils/fetchPhotos';
+import { prettyDate } from '@utils/prettyDate';
 import Layout from '@layouts/Layout.astro';
 import Masonry from '@components/Masonry.astro';
-import PageTitle from '@components/PageTitle.astro';
+import H1 from '@components/H1.astro';
+import ActionGroup from '@components/ActionGroup.astro';
 
 export async function getStaticPaths() {
   const galleries = await fetchGalleries();
@@ -20,18 +22,40 @@ export async function getStaticPaths() {
   }));
 }
 
-const { artist, artistSlug, venue, venueSlug, city, citySlug, date } = Astro.props.gallery;
-
+const { artist, artistSlug, venue, venueSlug, city, citySlug, date, country } = Astro.props.gallery;
 const photos = await fetchPhotos({ artist, artistSlug, venue, venueSlug, city, citySlug, date });
 
-console.log(citySlug);
+const masonryData = {
+  images: photos,
+  citySlug,
+  artist,
+  artistSlug,
+  date,
+  country
+};
+const maxFontSize = artist.length < 10 ? 'medium' : 'large';
 ---
 
 <Layout>
-  <PageTitle scale={true}>{artist}</PageTitle>
-  <p>Artist: {artist}</p>
-  <p>Venue: {venue}</p>
-  <p>Date: {date}</p>
+  <article>
+    <H1 scale={true} maxFontSize={maxFontSize}>{artist}</H1>
+    <div>
+      <h2>{venue}, {city}, {country}</h2>
+      <time datetime='2018-07-07'>{prettyDate(date, 'extended')}</time>
+    </div>
 
-  <Masonry images={photos} citySlug={citySlug} title={artist} artistSlug={artistSlug} date={date} />
+    <ActionGroup />
+
+    <Masonry data={masonryData} />
+  </article>
+
+  <style>
+    h2 {
+      display: inline-block;
+
+      &::after {
+        content: ' // ';
+      }
+    }
+  </style>
 </Layout>

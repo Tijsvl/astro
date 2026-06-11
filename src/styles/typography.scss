@@ -1,55 +1,47 @@
-@font-face {
+@mixin font-props {
   font-family: 'Futura';
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  @include font-props;
   src: url('/fonts/FuturaLight.woff2') format('woff2');
   font-weight: 200;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaBook.woff2') format('woff2');
   font-weight: 300;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaMedium.woff2') format('woff2');
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaDemi.woff2') format('woff2');
   font-weight: 500;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaHeavy.woff2') format('woff2');
   font-weight: 600;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaBold.woff2') format('woff2');
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
-  font-family: 'Futura';
+  @include font-props;
   src: url('/fonts/FuturaExtraBold.woff2') format('woff2');
   font-weight: 800;
-  font-style: normal;
-  font-display: swap;
 }
