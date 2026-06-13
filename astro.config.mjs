@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
 
-// https://astro.build/config
 export default defineConfig({
+  site: 'https://tijsvl.github.io/astro',
+  base: '/astro',
+
   vite: {
     resolve: {
       alias: {
