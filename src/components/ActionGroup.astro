@@ -5,15 +5,24 @@ import EmailIcon from '@svg/EmailIcon.astro';
 import FacebookIcon from '@svg/FacebookIcon.astro';
 import WhatsappIcon from '@svg/WhatsappIcon.astro';
 import LinkIcon from '@svg/LinkIcon.astro';
+import { randomString } from '@utils/randomString';
+
+type Props = {
+  openTo: string;
+};
+
+const id = randomString();
+
+const { openTo } = Astro.props;
 ---
 
 <div class='action-group'>
   <div class='share' data-share>
-    <button class='action' aria-controls='share-actions' aria-expanded='false'>
+    <button data-share-action class='action' aria-controls=`share-actions-${id}` aria-expanded='false'>
       <ShareIcon />
       <span>Share Gallery</span>
     </button>
-    <ul id='share-actions' aria-hidden='true'>
+    <ul data-share-action data-open-to={openTo} id=`share-actions-${id}` aria-hidden='true'>
       <li><a href='#' target='_blank' data-share-email><EmailIcon /> E-mail</a></li>
       <li><a href='#' target='_blank' data-share-facebook><FacebookIcon /> Facebook</a></li>
       <li><a href='#' target='_blank' data-share-whatsapp><WhatsappIcon /> Whatsapp</a></li>
@@ -47,7 +56,6 @@ import LinkIcon from '@svg/LinkIcon.astro';
 
   ul {
     position: absolute;
-    top: calc(100% + 10px);
     left: 0;
     min-width: 100%;
     width: max-content;
@@ -60,6 +68,14 @@ import LinkIcon from '@svg/LinkIcon.astro';
     z-index: 1;
     border: 1px solid black;
     font-size: 1.25rem;
+
+    &[data-open-to='top'] {
+      bottom: calc(100% + 10px);
+    }
+
+    &[data-open-to='bottom'] {
+      top: calc(100% + 10px);
+    }
 
     &[aria-hidden='true'] {
       display: none;
@@ -91,19 +107,31 @@ import LinkIcon from '@svg/LinkIcon.astro';
   const whatsappEl = document.querySelector('[data-share-whatsapp]') as HTMLAnchorElement;
   whatsappEl.href = 'https://api.whatsapp.com/send?text=' + location;
 
-  const shareActionEls = document.querySelectorAll('[data-share]') as NodeListOf<HTMLDivElement>;
+  const toggleShare = (button: HTMLButtonElement, action?: 'CLOSE' | 'OPEN') => {
+    let isOpening = button.ariaExpanded === 'false';
+    if (action === 'CLOSE') isOpening = false;
+    if (action === 'OPEN') isOpening = true;
+    const id = button.getAttribute('aria-controls') as string;
+    const ul = document.getElementById(id) as HTMLUListElement;
 
-  console.log(shareActionEls);
+    button.setAttribute('aria-expanded', String(isOpening));
+    ul.setAttribute('aria-hidden', String(!isOpening));
+  };
 
-  shareActionEls.forEach((el) => {
-    const button = el.querySelector('button') as HTMLButtonElement;
-    const ul = el.querySelector('ul') as HTMLUListElement;
+  const closeShare = () => {
+    const shareButtons = document.querySelectorAll('button[data-share-action]') as NodeListOf<HTMLButtonElement>;
+    shareButtons.forEach((button) => toggleShare(button, 'CLOSE'));
+  };
 
-    button?.addEventListener('click', () => {
-      const isOpening = button.ariaExpanded === 'false';
+  document.addEventListener('click', (e) => {
+    const shareButton = (e.target as HTMLElement)!.closest('button[data-share-action]') as HTMLButtonElement;
+    const shareUl = (e.target as HTMLElement)!.closest('ul[data-share-action]') as HTMLButtonElement;
 
-      button.setAttribute('aria-expanded', String(isOpening));
-      ul.setAttribute('aria-hidden', String(!isOpening));
-    });
+    if (shareButton) toggleShare(shareButton);
+    if (!shareButton && !shareUl) closeShare();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key == 'Escape') closeShare();
   });
 </script>

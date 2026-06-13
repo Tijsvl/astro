@@ -1,9 +1,59 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import H1 from '@components/H1.astro';
+import Spacer from '@components/Spacer.astro';
+import Note from '@components/Note.astro';
 ---
 
 <Layout>
-  <H1 scale={true}>Gimme beer!</H1>
-  <p>This is the beer page.</p>
+  <article>
+    <H1 scale={true} maxFontSize='large'>Buy Me A Beer</H1>
+
+    <Spacer space='large' />
+
+    <section>
+      <div>
+        <a href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-button.png' /></a>
+        <a class='qr' href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-qr.png' /></a>
+      </div>
+
+      <div>
+        <h2>Do you like my work and want to show your appreciation? Awesome!</h2>
+
+        <p>
+          One thing that you could do is make a small donation, so I can buy a myself a beer and maybe even a donut! Everything
+          is welcome!
+        </p>
+
+        <p>Just hit the button on your left or scan the QR code.</p>
+
+        <p>
+          If you're not able to make a donation - don't worry, I understand! Just make sure that when you do use my photos to
+          please tag me on your socials 😊
+        </p>
+
+        <p>
+          Please note that if you use my photos commercially you ALWAYS have to contact me first. See the copyright page for
+          more information.
+        </p>
+      </div>
+    </section>
+  </article>
+
+  <style lang='scss'>
+    section {
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(50%, 1fr);
+      gap: var(--space-5);
+    }
+
+    a + a {
+      display: inline-block;
+      margin-top: 2rem;
+    }
+
+    .qr img {
+      border: 1px solid rgb(from var(--c-paper) r g b / 0.3);
+    }
+  </style>
 </Layout>

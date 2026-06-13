@@ -1,0 +1,25 @@
+---
+type Props = {
+  space?: 'small' | 'medium' | 'large';
+};
+
+const { space = 'medium' } = Astro.props;
+---
+
+<div data-space={space}></div>
+
+<style>
+  div {
+    &[data-space='small'] {
+      height: var(--space-2);
+    }
+
+    &[data-space='medium'] {
+      height: var(--space-4);
+    }
+
+    &[data-space='large'] {
+      height: var(--space-6);
+    }
+  }
+</style>

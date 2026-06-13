@@ -21,7 +21,9 @@ const { as: As } = Astro.props as Props;
   {
     As === 'footer' && (
       <div class='flex text'>
-        <a href='/contact'>info@tijsvl.net</a> <a href='/copyright'>© Copyright 2026</a>
+        <a href='/beer'>Buy me a beer</a>
+        <a href='/contact'>info@tijsvl.net</a>
+        <a href='/copyright'>© Copyright {new Date().getFullYear()}</a>
       </div>
     )
   }

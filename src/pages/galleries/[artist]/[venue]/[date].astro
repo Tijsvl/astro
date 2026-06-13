@@ -44,9 +44,11 @@ const maxFontSize = artist.length < 10 ? 'medium' : 'large';
       <time datetime='2018-07-07'>{prettyDate(date, 'extended')}</time>
     </div>
 
-    <ActionGroup />
+    <ActionGroup openTo='bottom' />
 
     <Masonry data={masonryData} />
+
+    <ActionGroup openTo='top' />
   </article>
 
   <style>
