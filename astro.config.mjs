@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   site: 'https://tijsvl.github.io/astro',
-  base: '/astro',
+  base: '/',
 
   vite: {
     resolve: {

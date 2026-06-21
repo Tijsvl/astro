@@ -11,7 +11,7 @@ export const prettyDate = (input: string | number, format?: 'extended' | 'short'
   }
 
   if (format === 'numeric') {
-    return String(day).padStart(2, '0') + '/' + String(month).padStart(2, '0') + '/' + year.substring(2, 4);
+    return String(day).padStart(2, '0') + '.' + String(month).padStart(2, '0') + '.' + year.substring(2, 4);
   }
 
   // Define month names

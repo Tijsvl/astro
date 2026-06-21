@@ -41,7 +41,7 @@ const maxFontSize = artist.length < 10 ? 'medium' : 'large';
     <H1 scale={true} maxFontSize={maxFontSize}>{artist}</H1>
     <div>
       <h2>{venue}, {city}, {country}</h2>
-      <time datetime='2018-07-07'>{prettyDate(date, 'extended')}</time>
+      <time datetime={prettyDate(date, 'html')}>{prettyDate(date, 'extended')}</time>
     </div>
 
     <ActionGroup openTo='bottom' />
@@ -52,6 +52,10 @@ const maxFontSize = artist.length < 10 ? 'medium' : 'large';
   </article>
 
   <style>
+    time {
+      font-weight: 500;
+    }
+
     h2 {
       display: inline-block;
 

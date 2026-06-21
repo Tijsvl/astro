@@ -11,7 +11,7 @@ import Note from '@components/Note.astro';
 
     <Spacer space='large' />
 
-    <section>
+    <section data-split>
       <div>
         <a href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-button.png' /></a>
         <a class='qr' href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-qr.png' /></a>
@@ -41,19 +41,13 @@ import Note from '@components/Note.astro';
   </article>
 
   <style lang='scss'>
-    section {
-      display: grid;
-      grid-template-columns: minmax(0, 320px) minmax(50%, 1fr);
-      gap: var(--space-5);
-    }
-
     a + a {
       display: inline-block;
       margin-top: 2rem;
     }
 
     .qr img {
-      border: 1px solid rgb(from var(--c-paper) r g b / 0.3);
+      border: 1px solid rgb(from currentColor r g b / 0.2);
     }
   </style>
 </Layout>

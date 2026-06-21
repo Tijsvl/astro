@@ -16,10 +16,11 @@
     "astro": "^6.4.4"
   },
   "devDependencies": {
+    "firebase": "^12.14.0",
+    "firebase-admin": "^14.0.0",
+    "flag-icons": "^7.5.0",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
-    "sass-embedded": "^1.100.0",
-    "firebase": "^12.14.0",
-    "firebase-admin": "^14.0.0"
+    "sass-embedded": "^1.100.0"
   }
 }

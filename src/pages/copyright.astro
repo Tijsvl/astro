@@ -1,0 +1,156 @@
+---
+import Layout from '@layouts/Layout.astro';
+import H1 from '@components/H1.astro';
+---
+
+<Layout>
+  <article>
+    <H1>Copyright</H1>
+
+    <section>
+      <div>
+        <p>
+          I hold all copyrights to all photos on this website unless mentioned otherwise. Photos may only be used with written
+          consent. Exceptions are be listed below.
+        </p>
+      </div>
+
+      <div>
+        <h2>Want to PUBLISH my photo?</h2>
+        <p>
+          You must always <a href='/contact'>contact me</a> and:
+        </p>
+        <ul>
+          <li>Include details such as the name of the magazine, website, etc.</li>
+          <li>You must clearly and correctly credit me.</li>
+          <li>You must send me physical copy to my home address.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Are you A FAN/SUPPORTER on the photo?</h2>
+        <ul>
+          <li>
+            Go ahead and use it on your social media, but tag me using
+            <a href='//instagr.am/tijsvl' target='_blank' rel='noreferrer'>@tijsvl</a>
+            (for music photos) on Instagram, Facebook and/or X, or
+            <a href='//instagr.am/lookwhatiso' target='_blank' rel='noreferrer'>@lookwhatiso</a>
+            (for world photos) on Instagram.
+          </li>
+          <li>You may NOT use any photo to promote products and/or services without written consent.</li>
+          <li>You may NOT use any photo for print without written consent.</li>
+          <li>You may NOT re-edit my photos in any way.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Are you the ARTIST/PERFORMER/ATHLETE on the photo?</h2>
+        <ul>
+          <li>
+            You may use my photo on your social media outlets, but you MUST visibly credit me both in text and tag using
+            <a href='//instagr.am/tijsvl' target='_blank' rel='noreferrer'>@tijsvl</a>
+            (for music photos) on Instagram, Facebook and/or X, or
+            <a href='//instagr.am/lookwhatiso' target='_blank' rel='noreferrer'>@lookwhatiso</a>
+            (for world photos) on Instagram.
+          </li>
+          <li>You may share my work using the 'share' functions provided by Instagram, Facebook and/or X.</li>
+          <li>You may NOT use any photo to promote products and/or services without written consent.</li>
+          <li>You may NOT use any photo for print without written consent.</li>
+          <li>You may NOT re-edit my photos in any way.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Want to COMMERCIALLY use my photo?</h2>
+        <p>You must always <a href='/contact'>contact me</a> and:</p>
+        <ul>
+          <li>Include details such as the name of the campaign, estimated reach, what you're promoting, etc.</li>
+          <li>You must provide me with the final result.</li>
+          <li>This includes social media post promoting your products.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Are you the record LABEL/PROMOTOR for the artist on the photo?</h2>
+        <ul>
+          <li>
+            You may use my photo on your social media outlets, but you MUST visibly credit me both in text and tag using
+            <a href='//instagr.am/tijsvl' target='_blank' rel='noreferrer'>@tijsvl</a>
+            (for music photos) on Instagram, Facebook and/or X, or
+            <a href='//instagr.am/lookwhatiso' target='_blank' rel='noreferrer'>@lookwhatiso</a>
+            (for world photos) on Instagram.
+          </li>
+          <li>You may share my work using the 'share' functions provided by Instagram, Facebook and/or X.</li>
+          <li>You may NOT use any photo to promote products and/or services without written consent.</li>
+          <li>You may NOT use any photo for print without written consent.</li>
+          <li>You may NOT re-edit my photos in any way.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Are you the VENUE/FESTIVAL/HOST/ORGANIZER on the photo?</h2>
+        <ul>
+          <li>
+            You may use my photo on your social media outlets, but you MUST visibly credit me both in text and tag using
+            <a href='//instagr.am/tijsvl' target='_blank' rel='noreferrer'>@tijsvl</a>
+            (for music photos) on Instagram, Facebook and/or X, or
+            <a href='//instagr.am/lookwhatiso' target='_blank' rel='noreferrer'>@lookwhatiso</a>
+            (for world photos) on Instagram.
+          </li>
+          <li>You are limited to using a maximum of 2 photos.</li>
+          <li>You may share my work using the 'share' functions provided by Instagram, Facebook and/or X.</li>
+          <li>You may NOT use any photo to promote products and/or services without written consent.</li>
+          <li>You may NOT use any photo for print without written consent.</li>
+          <li>You may NOT re-edit my photos in any way.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Exceptions</h2>
+        <p>
+          Photos taken by me but offered on other platforms such as Unsplash (<a
+            href='https://unsplash.com/@tijsvl'
+            target='_blank'
+            rel='noreferrer'>my Unsplash profile</a
+          >), 500px, Getty Images and other platforms are exempt from all mentioned above. Terms &amp; Conditions of the
+          respective platforms apply instead.
+        </p>
+      </div>
+
+      <div>
+        <h2>Are you not sure if you can use my photo?</h2>
+        <p><a href='/contact'>Contact me</a></p>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style style='scss'>
+  h2 {
+    margin-bottom: 0.5em;
+  }
+
+  p {
+    max-width: unset;
+    margin: 0;
+  }
+
+  p:has(+ ul) {
+    margin: 0;
+  }
+
+  li::before {
+    content: '- ';
+  }
+
+  div {
+    border: 1px solid var(--c-ink-subtle-3);
+    background-color: var(--c-ink-subtle-1);
+    padding: 1em 1.25em;
+    border-radius: 0.5em;
+  }
+
+  div + div {
+    margin-top: 2em;
+  }
+</style>

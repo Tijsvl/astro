@@ -4,6 +4,141 @@ import H1 from '@components/H1.astro';
 ---
 
 <Layout>
-  <H1>Contact</H1>
-  <p>This is the contact page.</p>
+  <article>
+    <H1>Get in touch</H1>
+
+    <section data-form>
+      <div>
+        <h2>Contact me</h2>
+        <p>
+          Wanna talk photogaphy? Wether you're interested in hiring me for a gig or you're just looking for advise, let's talk!
+        </p>
+
+        <p>Drop me a line using the form and I'll get back to you as soon as I can.</p>
+      </div>
+      <div>
+        <form action='https://api.web3forms.com/submit' method='POST'>
+          <input type='hidden' name='access_key' value='6f8c15db-c652-4881-ac5a-f997286b2211' />
+
+          <label for='form-name'>Your name</label>
+          <input id='form-name' type='text' name='name' autocomplete='name' maxlength='100' required />
+
+          <label for='form-email'>Your email</label>
+          <input id='form-email' type='email' name='email' autocomplete='email' maxlength='254' required />
+
+          <label for='form-message'>Your message</label>
+          <textarea id='form-message' name='message' required></textarea>
+
+          <input type='checkbox' name='botcheck' class='hidden' tabindex='-1' autocomplete='off' aria-hidden='true' />
+
+          <button type='submit'>Send message</button>
+        </form>
+      </div>
+    </section>
+    <section>
+      <h2>Follow me</h2>
+      <div>
+        <ul>
+          <li><a href='https://www.instagram.com/tijsvl' target='_blank'>Instagram</a></li>
+          <li><a href='https://www.youtube.com/@tijsvlphotography' target='_blank'>Youtube</a></li>
+          <li><a href='https://www.tiktok.com/@tijsvl.photography' target='_blank'>Tiktok</a></li>
+          <li><a href='https://www.threads.com/@tijsvl' target='_blank'>Threads</a></li>
+        </ul>
+      </div>
+    </section>
+  </article>
 </Layout>
+
+<style type='scss'>
+  section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+    border-top: 2px solid var(--c-ink-subtle-2);
+    padding-block: var(--space-5);
+
+    &[data-form] {
+      @media screen and (width < 768px) {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+      }
+    }
+  }
+
+  section + section {
+    margin-top: var(--space-7);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  label {
+    margin-bottom: var(--space-2);
+    font-weight: 400;
+
+    span {
+      color: var(--c-ink-subtle-4);
+      font-weight: 300;
+    }
+  }
+
+  input,
+  textarea {
+    font-size: var(--font-5);
+    width: 100%;
+    padding: 0.25em 0.35em;
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--c-ink-subtle-3);
+  }
+
+  textarea {
+    min-height: 5lh;
+    field-sizing: content;
+    resize: vertical;
+  }
+
+  button {
+    padding: 0.25em 0.5em;
+    background-color: var(--c-paper-pure);
+    color: var(--c-ink);
+    border: 1px solid var(--c-ink);
+    font-size: var(--font-4);
+    transition: all ease-out 75ms;
+
+    &:hover {
+      background-color: var(--c-ink);
+      color: var(--c-paper-pure);
+      text-decoration: none;
+    }
+  }
+
+  .hidden {
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    text-index: -999999px;
+  }
+
+  ul {
+    margin-top: -0.25em;
+  }
+
+  li {
+    border-bottom: 2px solid var(--c-ink-subtle-2);
+
+    a {
+      text-decoration: none;
+      display: block;
+      padding-block: 0.5em;
+
+      &:hover::before {
+        left: -0.5em;
+      }
+    }
+  }
+</style>

@@ -2,31 +2,37 @@
 import Layout from '@layouts/Layout.astro';
 import H1 from '@components/H1.astro';
 import { db } from '@firebase/firebase.server';
-import { galleryUrl, unixToDate, type Gallery } from '../data/galleries.ts';
-import { galleryDateToUnix, type GalleryDateInput } from '@utils/date';
+import { galleryUrl, type Gallery } from '../data/galleries.ts';
+import { galleryDateToUnix } from '@utils/date';
+import { prettyDate } from '@utils/prettyDate';
+import { countryCode } from '@utils/countryCode';
+import '/node_modules/flag-icons/css/flag-icons.min.css';
 
 type GalleryDocument = {
   artist: string;
-  date: GalleryDateInput;
+  date: string;
   venue: string;
   city: string;
   country: string;
+  festival: boolean;
 };
 
 const galleries: Gallery[] = [];
 
 const querySnapshot = await db.collection('galleries').get();
 
-querySnapshot.forEach((doc: { data: () => GalleryDocument }) => {
-  const { artist, date, venue, city, country } = doc.data() as GalleryDocument;
-  const unixDate = galleryDateToUnix(date);
+querySnapshot.forEach((doc: { data: () => GalleryDocument }, idx) => {
+  const { artist, date, venue, city, country, festival } = doc.data() as GalleryDocument;
+  const unix = galleryDateToUnix(date);
 
   galleries.push({
     name: artist,
-    date: unixDate,
+    date,
+    unix,
     venue,
     city,
-    country
+    country,
+    festival
   });
 });
 
@@ -35,95 +41,190 @@ galleries.sort((left, right) => right.date - left.date);
 
 <Layout>
   <H1>Galleries</H1>
+  <div class='search'>
+    Search: <input type='search' placeholder='Search...' />
+  </div>
   <table>
     <thead>
-      <th>Artist</th>
-      <th>Venue</th>
-      <th>Date</th>
-      <th>City</th>
-      <th>Country</th>
+      <th><button>Artist</button></th>
+      <th data-show='small medium'><button>Location</button></th>
+      <th data-show='large'><button>Venue</button></th>
+      <th><button aria-pressed='true' aria-sort='ascending'>Date</button></th>
+      <th data-show='large'><button>City</button></th>
+      <th class='country'><div><button>Country</button></div></th>
     </thead>
     <tbody>
       {
         galleries.map((gallery) => (
           <tr>
-            <td>
+            <td class='artist'>
               <a href={galleryUrl(gallery)} aria-label={gallery.name} />
               {gallery.name}
             </td>
-            <td>{gallery.venue}</td>
-            <td>{unixToDate(gallery.date)}</td>
-            <td>{gallery.city}</td>
-            <td>{gallery.country}</td>
+            <td class='location' data-show='small medium'>
+              {gallery.festival ? gallery.venue : gallery.city}
+            </td>
+            <td class='venue' data-show='large'>
+              {gallery.venue}
+            </td>
+            <td class='date'>
+              <time datetime={prettyDate(gallery.date, 'html')}>
+                <span data-show='small'>{prettyDate(gallery.date, 'numeric')}</span>
+                <span data-show='medium'>{prettyDate(gallery.date, 'short')}</span>
+                <span data-show='large'>{prettyDate(gallery.date)}</span>
+              </time>
+            </td>
+            <td class='city' data-show='large'>
+              {gallery.city}
+            </td>
+            <td class='country'>
+              <div>
+                <span data-show='medium large'>{gallery.country}</span>
+                <span
+                  data-show='small'
+                  aria-label={gallery.country}
+                  class={`fi fi-${countryCode(gallery.country)}`}
+                  title={gallery.country}
+                />
+              </div>
+            </td>
           </tr>
         ))
       }
     </tbody>
   </table>
-</Layout>
 
-<style lang='scss'>
-  table {
-    width: 100%;
-    font-size: var(--font-4);
-    border-spacing: 0;
-
-    th {
-      font-weight: 600;
+  <style lang='scss'>
+    .search {
+      display: flex;
+      align-items: center;
+      justify-content: end;
+      margin-bottom: var(--space-6);
+      gap: var(--space-4);
     }
 
-    th,
-    td {
-      text-align: left;
-      padding-inline: calc(var(--page-spacing) / 2);
-      padding-block: var(--space-1);
+    th button {
+      display: flex;
+      align-items: center;
+      jusitify-content: center;
+      gap: var(--space-2);
     }
 
-    th {
-      padding-top: 0;
+    [aria-sort]::after {
+      content: '';
+      width: 0.65em;
+      height: 0.65em;
+      display: block;
+      mask-image: var(--i-chevron);
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: contain;
+      background-color: currentColor;
+      transition: rotate 0.15s ease-out;
     }
 
-    tr {
-      isolation: isolate;
-      position: relative;
+    [aria-sort='descending']::after {
+      rotate: 180deg;
+    }
 
-      // TODO: Make the effect work when hovering from both top and bottom so that it looks like a nice flow
-      &::after {
-        --_light: rgb(from currentColor r g b / 0.05);
-        --_dark: rgb(from currentColor r g b / 0.1);
-        background-color: light-dark(var(--_light), var(--_dark));
-        content: '';
-        position: absolute;
-        height: 1px;
-        inset: auto calc(var(--page-spacing) / 2) 0;
-        transition:
-          height 0.2s ease-in-out,
-          inset 0.1s ease-in-out;
-        z-index: -1;
+    table {
+      width: 100%;
+      font-size: var(--font-4);
+      border-spacing: 0;
+
+      @media screen and (width < 560px) {
+        font-size: var(--font-3);
       }
 
-      &:hover {
+      th {
+        font-weight: 600;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding-inline: calc(var(--page-spacing) / 2);
+        padding-block: var(--space-1);
+      }
+
+      th {
+        padding-top: 0;
+      }
+
+      tr {
+        isolation: isolate;
+        position: relative;
+
+        // TODO: Make the effect work when hovering from both top and bottom so that it looks like a nice flow
         &::after {
+          background-color: var(--c-ink-subtle-2);
           content: '';
           position: absolute;
-          height: 100%;
-          inset: auto calc(var(--page-spacing) * -1) 0;
+          height: 1px;
+          inset: auto calc(var(--page-spacing) / 2) 0;
           transition:
-            height 0.4s ease-in-out,
-            inset 0.2s ease-in-out;
+            height 0.2s ease-in-out,
+            inset 0.1s ease-in-out;
+          z-index: -1;
+        }
+
+        &:hover {
+          &::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            inset: auto calc(var(--page-spacing) * -1) 0;
+            transition:
+              height 0.4s ease-in-out,
+              inset 0.2s ease-in-out;
+          }
+        }
+
+        a {
+          position: absolute;
+          inset: 0;
         }
       }
 
-      a {
-        position: absolute;
-        inset: 0;
+      td {
+        border-bottom: 1px solid rgba(0 0 0 / 0);
       }
     }
 
-    td {
-      border-bottom: 1px solid rgba(0 0 0 / 0);
+    [data-show] {
+      display: none;
     }
-  }
-</style>
 
-<script></script>
+    @media screen and (width < 768px) {
+      [data-show*='small'] {
+        display: block;
+      }
+    }
+
+    @media screen and (width >= 768px) and (width < 1000px) {
+      [data-show*='medium'] {
+        display: block;
+      }
+    }
+
+    @media screen and (width >= 1000px) {
+      [data-show*='large'] {
+        display: block;
+      }
+    }
+
+    @media screen and (width < 768px) {
+      .country > div {
+        display: flex;
+        justify-content: center;
+      }
+    }
+
+    .fi {
+      margin: 0;
+      outline: 1px solid var(--c-ink-subtle-2);
+    }
+  </style>
+
+  <script></script>
+</Layout>

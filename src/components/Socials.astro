@@ -13,8 +13,8 @@ const { as: As } = Astro.props as Props;
 
 <As>
   <div class='flex icons'>
-    <a href='//instagram.com/tijsvl' target='_blank'><InstagramSolid /></a>
-    <a href='//unsplash.com/@tijsvl' target='_blank'><UnsplashSolid /></a>
+    <a href='https://instagram.com/tijsvl' target='_blank'><InstagramSolid /></a>
+    <a href='https://unsplash.com/@tijsvl' target='_blank'><UnsplashSolid /></a>
     <a href='/beer'><BeerSolid /></a>
     {As === 'aside' && <BackToTop />}
   </div>
@@ -23,7 +23,7 @@ const { as: As } = Astro.props as Props;
       <div class='flex text'>
         <a href='/beer'>Buy me a beer</a>
         <a href='/contact'>info@tijsvl.net</a>
-        <a href='/copyright'>© Copyright {new Date().getFullYear()}</a>
+        <a href='/copyright'>© {new Date().getFullYear()}</a>
       </div>
     )
   }
@@ -75,7 +75,7 @@ const { as: As } = Astro.props as Props;
   }
 </style>
 
-<style is:global>
+<style lang='scss' is:global>
   footer,
   aside {
     > div {
