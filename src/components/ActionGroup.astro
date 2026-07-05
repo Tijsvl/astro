@@ -26,7 +26,7 @@ const { openTo } = Astro.props;
       <li><a href='#' target='_blank' data-share-email><EmailIcon /> E-mail</a></li>
       <li><a href='#' target='_blank' data-share-facebook><FacebookIcon /> Facebook</a></li>
       <li><a href='#' target='_blank' data-share-whatsapp><WhatsappIcon /> Whatsapp</a></li>
-      <li><button data-share-copy><LinkIcon /> Copy Link</button></li>
+      <li><button data-share-copy><LinkIcon /> <span>Copy Link</span></button></li>
     </ul>
   </div>
   <div class='beer'>
@@ -123,12 +123,20 @@ const { openTo } = Astro.props;
     shareButtons.forEach((button) => toggleShare(button, 'CLOSE'));
   };
 
+  const copyHandler = (btn: HTMLButtonElement) => {
+    navigator.clipboard.writeText(location);
+
+    (btn.querySelector('span') as HTMLSpanElement).innerText = 'Link copied!';
+  };
+
   document.addEventListener('click', (e) => {
     const shareButton = (e.target as HTMLElement)!.closest('button[data-share-action]') as HTMLButtonElement;
     const shareUl = (e.target as HTMLElement)!.closest('ul[data-share-action]') as HTMLButtonElement;
+    const copyButton = (e.target as HTMLElement)!.closest('button[data-share-copy]') as HTMLButtonElement;
 
     if (shareButton) toggleShare(shareButton);
     if (!shareButton && !shareUl) closeShare();
+    if (copyButton) copyHandler(copyButton);
   });
 
   document.addEventListener('keydown', (e) => {

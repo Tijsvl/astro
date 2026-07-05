@@ -21,7 +21,7 @@ const galleries: Gallery[] = [];
 
 const querySnapshot = await db.collection('galleries').get();
 
-querySnapshot.forEach((doc: { data: () => GalleryDocument }, idx) => {
+querySnapshot.forEach((doc) => {
   const { artist, date, venue, city, country, festival } = doc.data() as GalleryDocument;
   const unix = galleryDateToUnix(date);
 
@@ -36,27 +36,37 @@ querySnapshot.forEach((doc: { data: () => GalleryDocument }, idx) => {
   });
 });
 
-galleries.sort((left, right) => right.date - left.date);
+galleries.sort((left, right) => right.unix - left.unix);
 ---
 
 <Layout>
   <H1>Galleries</H1>
-  <div class='search'>
-    Search: <input type='search' placeholder='Search...' />
-  </div>
+  <!-- <div class='search'>
+    Search: <input type='search' />
+  </div> -->
   <table>
     <thead>
-      <th><button>Artist</button></th>
-      <th data-show='small medium'><button>Location</button></th>
-      <th data-show='large'><button>Venue</button></th>
-      <th><button aria-pressed='true' aria-sort='ascending'>Date</button></th>
-      <th data-show='large'><button>City</button></th>
-      <th class='country'><div><button>Country</button></div></th>
+      <tr>
+        <th scope='col'><button type='button' data-sort-key='artist'>Artist</button></th>
+        <th scope='col' data-show='small medium'><button type='button' data-sort-key='location'>Location</button></th>
+        <th scope='col' data-show='large'><button type='button' data-sort-key='venue'>Venue</button></th>
+        <th scope='col'><button type='button' data-sort-key='date' aria-sort='descending'>Date</button></th>
+        <th scope='col' data-show='large'><button type='button' data-sort-key='city'>City</button></th>
+        <th scope='col' class='country'><div><button type='button' data-sort-key='country'>Country</button></div></th>
+      </tr>
     </thead>
     <tbody>
       {
-        galleries.map((gallery) => (
-          <tr>
+        galleries.map((gallery, idx) => (
+          <tr
+            data-index={idx}
+            data-sort-artist={gallery.name}
+            data-sort-location={gallery.festival ? gallery.venue : gallery.city}
+            data-sort-venue={gallery.venue}
+            data-sort-date={gallery.unix}
+            data-sort-city={gallery.city}
+            data-sort-country={gallery.country}
+          >
             <td class='artist'>
               <a href={galleryUrl(gallery)} aria-label={gallery.name} />
               {gallery.name}
@@ -106,8 +116,9 @@ galleries.sort((left, right) => right.date - left.date);
     th button {
       display: flex;
       align-items: center;
-      jusitify-content: center;
+      justify-content: center;
       gap: var(--space-2);
+      margin-bottom: var(--space-2);
     }
 
     [aria-sort]::after {
@@ -151,7 +162,7 @@ galleries.sort((left, right) => right.date - left.date);
         padding-top: 0;
       }
 
-      tr {
+      tbody tr {
         isolation: isolate;
         position: relative;
 
@@ -226,5 +237,77 @@ galleries.sort((left, right) => right.date - left.date);
     }
   </style>
 
-  <script></script>
+  <script>
+    // @ts-nocheck
+
+    const table = document.querySelector('table');
+    const sortButtons = Array.from(document.querySelectorAll('button[data-sort-key]'));
+
+    if (table && table.tBodies[0] && sortButtons.length) {
+      const tbody = table.tBodies[0];
+      const collator = new Intl.Collator(undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+
+      const getDatasetKey = (sortKey) => `sort${sortKey.charAt(0).toUpperCase()}${sortKey.slice(1)}`;
+
+      const getRowValue = (row, sortKey) => row.dataset[getDatasetKey(sortKey)] ?? '';
+
+      const updateHeaderState = (activeButton, direction) => {
+        sortButtons.forEach((button) => {
+          if (button === activeButton) {
+            button.setAttribute('aria-sort', direction);
+          } else {
+            button.removeAttribute('aria-sort');
+          }
+        });
+      };
+
+      const sortRows = (sortKey, direction) => {
+        const rows = Array.from(tbody.rows);
+
+        rows.sort((leftRow, rightRow) => {
+          const leftValue = getRowValue(leftRow, sortKey);
+          const rightValue = getRowValue(rightRow, sortKey);
+
+          const comparison =
+            sortKey === 'date' ? Number(leftValue) - Number(rightValue) : collator.compare(leftValue, rightValue);
+
+          if (comparison !== 0) {
+            return direction === 'ascending' ? comparison : -comparison;
+          }
+
+          return Number(leftRow.dataset.index ?? 0) - Number(rightRow.dataset.index ?? 0);
+        });
+
+        tbody.append(...rows);
+      };
+
+      const activeButton = sortButtons.find((button) => button.hasAttribute('aria-sort')) ?? sortButtons[0];
+      const activeSortKey = activeButton.dataset.sortKey;
+      const activeDirection = activeButton.getAttribute('aria-sort') === 'ascending' ? 'ascending' : 'descending';
+
+      updateHeaderState(activeButton, activeDirection);
+      sortRows(activeSortKey, activeDirection);
+
+      sortButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const sortKey = button.dataset.sortKey;
+          const isActive = button.hasAttribute('aria-sort');
+          const currentDirection = button.getAttribute('aria-sort') === 'ascending' ? 'ascending' : 'descending';
+          const nextDirection = isActive
+            ? currentDirection === 'ascending'
+              ? 'descending'
+              : 'ascending'
+            : sortKey === 'date'
+              ? 'descending'
+              : 'ascending';
+
+          updateHeaderState(button, nextDirection);
+          sortRows(sortKey, nextDirection);
+        });
+      });
+    }
+  </script>
 </Layout>

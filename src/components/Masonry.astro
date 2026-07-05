@@ -18,6 +18,7 @@ type Props = {
 const { data } = Astro.props as Props;
 const { images = [], artist, artistSlug, citySlug, date } = data;
 const masonryImages = images.filter((image) => !image.type || image.type === 'image');
+masonryImages.sort((a, b) => a.file.localeCompare(b.file));
 
 const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${date}`;
 ---
@@ -38,14 +39,16 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
                 loading='lazy'
               />
             </picture>
-
             <figcaption>{artist}</figcaption>
           </figure>
+          <button aria-label='Open photo' data-photo={prefix + '/' + item.file.replace('.jpg', '_medium.jpg')} />
         </div>
       ))
     }
   </div>
 </section>
+
+<dialog></dialog>
 
 <script>
   // @ts-nocheck
@@ -199,18 +202,39 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     }
   };
 
-  if (document.readyState === 'complete') {
-    onReady();
-  } else {
-    window.addEventListener('load', onReady, { once: true });
-  }
+  if (document.readyState === 'complete') onReady();
+  else window.addEventListener('load', onReady, { once: true });
 
   document.addEventListener('astro:page-load', initAllMasonry);
+
+  const dialog = document.querySelector('dialog');
+
+  document.addEventListener('click', (e) => {
+    const shareButton = (e.target as HTMLElement)!.closest('button[data-photo]') as HTMLButtonElement;
+
+    if (!shareButton) return;
+
+    const photo = shareButton.getAttribute('data-photo');
+
+    dialog.innerHTML = `<img src="${photo}" />`;
+
+    dialog.showModal();
+
+    console.log('click');
+  });
 </script>
 
 <style lang='scss'>
   section {
     isolation: isolate;
+  }
+
+  button {
+    background: transparent;
+    position: absolute;
+    inset: 0;
+
+    z-index: 99;
   }
 
   :global([data-masonry]) {
@@ -222,7 +246,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     --_animation-delay: 100ms;
 
     position: relative;
-    margin-block: var(--space-7);
+    margin-block: var(--space-6);
     visibility: hidden;
 
     &:has([masonry-shadow]) {
@@ -299,12 +323,12 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
         }
 
         img {
-          transition: filter 0.15s ease-in-out;
-          will-change: filter;
+          transition: filter 0.15s ease-out;
+          will-change: scale;
         }
 
         &:hover img {
-          filter: brightness(1.5);
+          filter: brightness(1.25);
         }
       }
 

@@ -4,7 +4,7 @@ export { slug };
 
 export type Gallery = {
   name: string;
-  date: number;
+  date: string | number;
   unix: number;
   venue: string;
   city: string;
