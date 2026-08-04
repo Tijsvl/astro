@@ -1,4 +1,6 @@
 ---
+import CloseIcon from '@svg/CloseIcon.astro';
+
 type MasonryImage = {
   file: string;
   type?: string;
@@ -48,7 +50,10 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
   </div>
 </section>
 
-<dialog></dialog>
+<dialog id='dialog'>
+  <button commandfor='dialog' command='close' aria-label='Close Dialog'><CloseIcon /></button>
+  <section></section>
+</dialog>
 
 <script>
   // @ts-nocheck
@@ -104,12 +109,14 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     const yStart = masonry.offsetTop;
     const masonryWidth = masonry.clientWidth;
     /** @type {HTMLElement[]} */
-    const masonryItems = [...masonry.querySelectorAll(':scope [data-masonry-item]')];
+    const masonryItems = Array.from(masonry.querySelectorAll(':scope [data-masonry-item]'));
 
     masonryItems.forEach((el, key) => {
       el.setAttribute('masonry-id', `id_${key + 1}`);
       el.style.setProperty('--d', String(key + 1));
     });
+
+    const masonryItemById = new Map(masonryItems.map((item) => [item.getAttribute('masonry-id'), item]));
 
     /** @type {{ element: HTMLElement; y: number }[]} */
     const shadowItems = [];
@@ -130,17 +137,21 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
 
     /** @type {{ element: HTMLElement; y: number }[][]} */
     const rows = [];
-    const filterRows = () => {
-      const currentRow = shadowItems.filter((row) => row.y === shadowItems[0].y);
-      rows.push(currentRow);
-      shadowItems.splice(0, currentRow.length);
+    const rowTolerance = 1; // pixels
+    let rowIndex = 0;
 
-      if (shadowItems.length > 0) {
-        filterRows();
+    while (rowIndex < shadowItems.length) {
+      const baseY = shadowItems[rowIndex].y;
+      const currentRow = [shadowItems[rowIndex]];
+      rowIndex += 1;
+
+      while (rowIndex < shadowItems.length && Math.abs(shadowItems[rowIndex].y - baseY) <= rowTolerance) {
+        currentRow.push(shadowItems[rowIndex]);
+        rowIndex += 1;
       }
-    };
 
-    filterRows();
+      rows.push(currentRow);
+    }
 
     rows.forEach((row, idx) => {
       const isLastRow = rows.length - 1 === idx;
@@ -157,9 +168,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
         const isLast = row.length - 1 === key;
         element.style.setProperty('--p', String(difference));
 
-        const viewItem = [...masonryItems].find(
-          (item) => item.getAttribute('masonry-id') === element.getAttribute('masonry-id')
-        );
+        const viewItem = masonryItemById.get(element.getAttribute('masonry-id'));
 
         if (viewItem) {
           const x = (element.getBoundingClientRect().x - xStart).toFixed(2);
@@ -208,6 +217,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
   document.addEventListener('astro:page-load', initAllMasonry);
 
   const dialog = document.querySelector('dialog');
+  const dialogContent = dialog.querySelector('section') as HTMLElement;
 
   document.addEventListener('click', (e) => {
     const shareButton = (e.target as HTMLElement)!.closest('button[data-photo]') as HTMLButtonElement;
@@ -215,12 +225,10 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     if (!shareButton) return;
 
     const photo = shareButton.getAttribute('data-photo');
-
-    dialog.innerHTML = `<img src="${photo}" />`;
+    const aspectRatio = shareButton.parentElement?.getAttribute('style')?.match(/--a:\s*([^;]+)/)?.[1] ?? '1';
+    dialogContent.innerHTML = `<img src="${photo}" style="--ar: ${aspectRatio};" />`;
 
     dialog.showModal();
-
-    console.log('click');
   });
 </script>
 
@@ -229,11 +237,10 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     isolation: isolate;
   }
 
-  button {
+  section button {
     background: transparent;
     position: absolute;
     inset: 0;
-
     z-index: 99;
   }
 
@@ -317,7 +324,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
           display: block;
           position: absolute;
           inset: calc(var(--_gap) * -1);
-          background-color: rgba(255, 255, 255, 1);
+          background-color: var(--c-paper);
           pointer-events: none;
           z-index: -1;
         }
