@@ -1,5 +1,6 @@
 ---
 import CloseIcon from '@svg/CloseIcon.astro';
+import ChevronIcon from '@svg/ChevronIcon.astro';
 
 type MasonryImage = {
   file: string;
@@ -11,6 +12,8 @@ type Props = {
   data: {
     images?: MasonryImage[];
     artist: string;
+    venue?: string;
+    city?: string;
     artistSlug?: string;
     citySlug?: string;
     date?: string;
@@ -18,7 +21,7 @@ type Props = {
 };
 
 const { data } = Astro.props as Props;
-const { images = [], artist, artistSlug, citySlug, date } = data;
+const { images = [], artist, venue, city, artistSlug, citySlug, date } = data;
 const masonryImages = images.filter((image) => !image.type || image.type === 'image');
 masonryImages.sort((a, b) => a.file.localeCompare(b.file));
 
@@ -43,16 +46,31 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
             </picture>
             <figcaption>{artist}</figcaption>
           </figure>
-          <button aria-label='Open photo' data-photo={prefix + '/' + item.file.replace('.jpg', '_medium.jpg')} />
+          <button
+            aria-label='Open photo'
+            data-photo={prefix + '/' + item.file.replace('.jpg', '_medium.jpg')}
+            data-photo-key={item.file}
+          />
         </div>
       ))
     }
   </div>
 </section>
 
-<dialog id='dialog'>
-  <button commandfor='dialog' command='close' aria-label='Close Dialog'><CloseIcon /></button>
+<dialog id='dialog' data-artist={artist} data-venue={venue ?? ''} data-city={city ?? ''}>
+  <button class='dialog-close' commandfor='dialog' command='close' aria-label='Close dialog'><CloseIcon /></button>
   <section></section>
+  <div class='dialog-meta'>
+    <button type='button' class='dialog-nav prev' data-dialog-nav='prev' aria-label='Previous photo'><ChevronIcon /></button>
+    <div class='dialog-copy'>
+      <p>
+        <strong data-photo-artist>{artist}</strong>
+        <span data-photo-venue>{[venue, city].filter(Boolean).join(', ')}</span>
+      </p>
+      <span class='dialog-index' data-photo-index>1 / 1</span>
+    </div>
+    <button type='button' class='dialog-nav next' data-dialog-nav='next' aria-label='Next photo'><ChevronIcon /></button>
+  </div>
 </dialog>
 
 <script>
@@ -218,18 +236,190 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
 
   const dialog = document.querySelector('dialog');
   const dialogContent = dialog.querySelector('section') as HTMLElement;
+  const photoArtist = dialog.querySelector('[data-photo-artist]') as HTMLElement;
+  const photoVenue = dialog.querySelector('[data-photo-venue]') as HTMLElement;
+  const photoIndex = dialog.querySelector('[data-photo-index]') as HTMLElement;
+  const dialogNavButtons = Array.from(dialog.querySelectorAll('[data-dialog-nav]')) as HTMLButtonElement[];
+
+  const getPhotoButtons = () => Array.from(document.querySelectorAll('button[data-photo-key]')) as HTMLButtonElement[];
+
+  const updateDialogUrl = (photoKey) => {
+    const url = new URL(window.location.href);
+
+    if (photoKey) {
+      url.searchParams.set('photo', photoKey);
+    } else {
+      url.searchParams.delete('photo');
+    }
+
+    window.history.pushState({}, '', `${url.pathname}${url.search}`);
+  };
+
+  const updatePhotoMeta = (photoButton) => {
+    const artist = dialog.getAttribute('data-artist') ?? '';
+    const venue = dialog.getAttribute('data-venue') ?? '';
+    const city = dialog.getAttribute('data-city') ?? '';
+    const photoButtons = getPhotoButtons();
+    const currentKey = photoButton?.getAttribute('data-photo-key') ?? dialog.getAttribute('data-photo-key') ?? null;
+
+    photoArtist.textContent = artist;
+    photoVenue.textContent = [venue, city].filter(Boolean).join(', ');
+
+    if (currentKey) {
+      const photoPosition = photoButtons.findIndex((button) => {
+        const buttonKey = button.getAttribute('data-photo-key');
+        return buttonKey === currentKey || (buttonKey && decodeURIComponent(currentKey) === buttonKey);
+      });
+
+      const totalPhotos = photoButtons.length || 1;
+      const safeIndex = photoPosition > -1 ? photoPosition + 1 : 1;
+      photoIndex.textContent = `${safeIndex} / ${totalPhotos}`;
+    } else {
+      photoIndex.textContent = `1 / ${photoButtons.length || 1}`;
+    }
+
+    if (photoButton) {
+      const photoKey = photoButton.getAttribute('data-photo-key');
+      dialog.dataset.photoKey = photoKey ?? '';
+    }
+  };
+
+  const openPhotoDialog = (photoButton, { updateUrl = true } = {}) => {
+    const photo = photoButton.getAttribute('data-photo');
+    const photoKey = photoButton.getAttribute('data-photo-key') ?? photo?.split('/').pop() ?? null;
+
+    if (!photo || !photoKey) return;
+
+    const aspectRatio = photoButton.parentElement?.getAttribute('style')?.match(/--a:\s*([^;]+)/)?.[1] ?? '1';
+    dialogContent.innerHTML = `<img src="${photo}" alt="${dialog.getAttribute('data-artist') ?? 'Gallery photo'}" style="--ar: ${aspectRatio};" />`;
+    dialog.showModal();
+    updatePhotoMeta(photoButton);
+
+    if (updateUrl) {
+      updateDialogUrl(photoKey);
+    }
+  };
+
+  const closePhotoDialog = () => {
+    if (dialog.open) {
+      dialog.close();
+    }
+
+    updateDialogUrl(null);
+    dialog.removeAttribute('data-photo-key');
+  };
+
+  const openPhotoFromUrl = () => {
+    const photoKey = new URLSearchParams(window.location.search).get('photo');
+
+    if (!photoKey) return;
+
+    const photoButton = getPhotoButtons().find((button) => {
+      const currentKey = button.getAttribute('data-photo-key');
+      return currentKey === photoKey || (currentKey && decodeURIComponent(photoKey) === currentKey);
+    });
+
+    if (!photoButton) return;
+
+    openPhotoDialog(photoButton, { updateUrl: false });
+  };
+
+  const navigateToPhoto = (direction) => {
+    const currentKey = dialog.getAttribute('data-photo-key');
+    const photoButtons = getPhotoButtons();
+
+    if (!currentKey || !photoButtons.length) return;
+
+    const currentIndex = photoButtons.findIndex((button) => {
+      const buttonKey = button.getAttribute('data-photo-key');
+      return buttonKey === currentKey || (buttonKey && decodeURIComponent(currentKey) === buttonKey);
+    });
+
+    if (currentIndex === -1) return;
+
+    const nextIndex = (currentIndex + direction + photoButtons.length) % photoButtons.length;
+    const nextPhotoButton = photoButtons[nextIndex];
+
+    openPhotoDialog(nextPhotoButton);
+  };
 
   document.addEventListener('click', (e) => {
-    const shareButton = (e.target as HTMLElement)!.closest('button[data-photo]') as HTMLButtonElement;
+    const dialogNavButton = (e.target as HTMLElement)!.closest('[data-dialog-nav]') as HTMLButtonElement | null;
 
-    if (!shareButton) return;
+    if (dialogNavButton) {
+      if (dialogNavButton.dataset.dialogNav === 'next') {
+        navigateToPhoto(1);
+      }
 
-    const photo = shareButton.getAttribute('data-photo');
-    const aspectRatio = shareButton.parentElement?.getAttribute('style')?.match(/--a:\s*([^;]+)/)?.[1] ?? '1';
-    dialogContent.innerHTML = `<img src="${photo}" style="--ar: ${aspectRatio};" />`;
+      if (dialogNavButton.dataset.dialogNav === 'prev') {
+        navigateToPhoto(-1);
+      }
 
-    dialog.showModal();
+      return;
+    }
+
+    const photoButton = (e.target as HTMLElement)!.closest('button[data-photo]') as HTMLButtonElement;
+
+    if (photoButton) {
+      openPhotoDialog(photoButton);
+    }
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (!dialog.open) return;
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      navigateToPhoto(1);
+    }
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      navigateToPhoto(-1);
+    }
+  });
+
+  dialog.addEventListener('close', () => {
+    const url = new URL(window.location.href);
+
+    if (url.searchParams.has('photo')) {
+      updateDialogUrl(null);
+    }
+
+    dialog.removeAttribute('data-photo-key');
+  });
+
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) {
+      closePhotoDialog();
+    }
+  });
+
+  dialogNavButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const direction = button.dataset.dialogNav === 'next' ? 1 : -1;
+      navigateToPhoto(direction);
+    });
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    initAllMasonry();
+    openPhotoFromUrl();
+  });
+
+  if (document.readyState === 'complete') {
+    onReady();
+    openPhotoFromUrl();
+  } else {
+    window.addEventListener(
+      'load',
+      () => {
+        onReady();
+        openPhotoFromUrl();
+      },
+      { once: true }
+    );
+  }
 </script>
 
 <style lang='scss'>
@@ -242,6 +432,101 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     position: absolute;
     inset: 0;
     z-index: 99;
+  }
+
+  dialog {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    max-width: min(92vw, 1100px);
+    width: min(92vw, 1100px);
+    color: var(--c-text);
+
+    &::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  .dialog-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    color: white;
+    cursor: pointer;
+  }
+
+  .dialog-meta {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+    color: var(--c-white);
+  }
+
+  .dialog-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35rem;
+  }
+
+  .dialog-copy p {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.5rem;
+  }
+
+  .dialog-index {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .dialog-nav {
+    color: white;
+
+    :global(svg) {
+      margin-inline: auto;
+    }
+
+    &.prev {
+      justify-self: start;
+
+      :global(svg) {
+        rotate: 180deg;
+      }
+    }
+
+    &.next {
+      justify-self: end;
+    }
+  }
+
+  section {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 1rem;
+    overflow: hidden;
+    padding: 0;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(82vh, 900px);
+      aspect-ratio: var(--ar, 1);
+      object-fit: cover;
+      opacity: 0.5;
+    }
   }
 
   :global([data-masonry]) {
