@@ -28,7 +28,7 @@ masonryImages.sort((a, b) => a.file.localeCompare(b.file));
 const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${date}`;
 ---
 
-<section data-masonry>
+<section data-masonry data-masonry-length={masonryImages.length}>
   <div>
     {
       masonryImages.map((item) => (
@@ -59,18 +59,39 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
 
 <dialog id='dialog' data-artist={artist} data-venue={venue ?? ''} data-city={city ?? ''}>
   <button class='dialog-close' commandfor='dialog' command='close' aria-label='Close dialog'><CloseIcon /></button>
+  <div class='dialog-photo-caption'>
+    <strong data-photo-artist>{artist}</strong>
+    <span data-photo-venue>{[venue, city].filter(Boolean).join(', ')}</span>
+  </div>
   <section></section>
   <div class='dialog-meta'>
     <button type='button' class='dialog-nav prev' data-dialog-nav='prev' aria-label='Previous photo'><ChevronIcon /></button>
     <div class='dialog-copy'>
-      <p>
-        <strong data-photo-artist>{artist}</strong>
-        <span data-photo-venue>{[venue, city].filter(Boolean).join(', ')}</span>
-      </p>
+      <div class='dialog-download'>
+        <a data-dialog-download href='' aria-label='Download photo'>Download photo</a>
+
+        <div class='dialog-thanks' data-dialog-thanks aria-hidden='true'>
+          <p>Thanks for downloading!</p>
+          <a href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-button.png' /></a>
+          <a href='/copyright' target='_blank'>Am I allowed to use this photo?</a>
+        </div>
+      </div>
       <span class='dialog-index' data-photo-index>1 / 1</span>
     </div>
     <button type='button' class='dialog-nav next' data-dialog-nav='next' aria-label='Next photo'><ChevronIcon /></button>
   </div>
+  <template id='dialog-custom-slide-template'>
+    <div class='dialog-custom-slide'>
+      <div class='dialog-custom-inner'>
+        <h2>Like my work?</h2>
+        <p>Please consider making a small contribution to keep me going :)</p>
+        <div>
+          <a href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-button.png' /></a>
+          <a class='qr' href='https://buymeacoffee.com/tijsvl' target='_blank'><img src='/images/beer-qr.png' /></a>
+        </div>
+      </div>
+    </div>
+  </template>
 </dialog>
 
 <script>
@@ -239,9 +260,27 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
   const photoArtist = dialog.querySelector('[data-photo-artist]') as HTMLElement;
   const photoVenue = dialog.querySelector('[data-photo-venue]') as HTMLElement;
   const photoIndex = dialog.querySelector('[data-photo-index]') as HTMLElement;
-  const dialogNavButtons = Array.from(dialog.querySelectorAll('[data-dialog-nav]')) as HTMLButtonElement[];
+  const dialogCopy = dialog.querySelector('.dialog-copy') as HTMLElement;
+  const dialogDownload = dialog.querySelector('[data-dialog-download]') as HTMLAnchorElement | null;
+  const dialogPhotoCaption = dialog.querySelector('.dialog-photo-caption') as HTMLElement;
 
-  const getPhotoButtons = () => Array.from(document.querySelectorAll('button[data-photo-key]')) as HTMLButtonElement[];
+  const getPhotoButtons = () =>
+    Array.from(document.querySelectorAll('button[data-photo-key]')).filter(
+      (button) => !button.closest('[masonry-shadow]')
+    ) as HTMLButtonElement[];
+
+  const CUSTOM_SLIDE_KEY = '__custom__';
+
+  const getSlides = () => {
+    const photoButtons = getPhotoButtons();
+
+    return [
+      ...photoButtons.map((button) => ({ type: 'photo', key: button.getAttribute('data-photo-key') ?? '', button })),
+      { type: 'custom', key: CUSTOM_SLIDE_KEY }
+    ];
+  };
+
+  const getPhotoCount = () => document.querySelector('[data-masonry]')?.getAttribute('data-masonry-length') ?? 0;
 
   const updateDialogUrl = (photoKey) => {
     const url = new URL(window.location.href);
@@ -259,23 +298,23 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     const artist = dialog.getAttribute('data-artist') ?? '';
     const venue = dialog.getAttribute('data-venue') ?? '';
     const city = dialog.getAttribute('data-city') ?? '';
-    const photoButtons = getPhotoButtons();
+    const slides = getSlides();
+    const totalPhotos = getPhotoCount();
     const currentKey = photoButton?.getAttribute('data-photo-key') ?? dialog.getAttribute('data-photo-key') ?? null;
 
     photoArtist.textContent = artist;
     photoVenue.textContent = [venue, city].filter(Boolean).join(', ');
 
-    if (currentKey) {
-      const photoPosition = photoButtons.findIndex((button) => {
-        const buttonKey = button.getAttribute('data-photo-key');
-        return buttonKey === currentKey || (buttonKey && decodeURIComponent(currentKey) === buttonKey);
-      });
-
-      const totalPhotos = photoButtons.length || 1;
+    if (currentKey === CUSTOM_SLIDE_KEY) {
+      photoIndex.textContent = `${totalPhotos} / ${totalPhotos}`;
+    } else if (currentKey) {
+      const photoPosition = slides.findIndex(
+        (slide) => slide.key === currentKey || (slide.type === 'photo' && decodeURIComponent(currentKey) === slide.key)
+      );
       const safeIndex = photoPosition > -1 ? photoPosition + 1 : 1;
       photoIndex.textContent = `${safeIndex} / ${totalPhotos}`;
     } else {
-      photoIndex.textContent = `1 / ${photoButtons.length || 1}`;
+      photoIndex.textContent = `1 / ${totalPhotos}`;
     }
 
     if (photoButton) {
@@ -284,11 +323,40 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     }
   };
 
+  const renderCustomSlide = ({ updateUrl = true } = {}) => {
+    const customTemplate = document.getElementById('dialog-custom-slide-template');
+    const customHtml = customTemplate?.innerHTML ?? '<div class="dialog-custom-slide"><p>Custom content</p></div>';
+
+    dialog.classList.add('is-custom');
+    dialogCopy.style.display = 'none';
+    dialogPhotoCaption.style.display = 'none';
+    if (dialogDownload) {
+      dialogDownload.style.display = 'none';
+    }
+
+    dialogContent.innerHTML = customHtml;
+    dialog.showModal();
+    dialog.dataset.photoKey = CUSTOM_SLIDE_KEY;
+    photoIndex.textContent = '';
+
+    if (updateUrl) {
+      updateDialogUrl(CUSTOM_SLIDE_KEY);
+    }
+  };
+
   const openPhotoDialog = (photoButton, { updateUrl = true } = {}) => {
     const photo = photoButton.getAttribute('data-photo');
     const photoKey = photoButton.getAttribute('data-photo-key') ?? photo?.split('/').pop() ?? null;
 
     if (!photo || !photoKey) return;
+
+    dialog.classList.remove('is-custom');
+    dialogCopy.style.display = 'flex';
+    dialogPhotoCaption.style.display = 'flex';
+    if (dialogDownload) {
+      dialogDownload.href = `${photo}?download`;
+      dialogDownload.style.display = 'inline-flex';
+    }
 
     const aspectRatio = photoButton.parentElement?.getAttribute('style')?.match(/--a:\s*([^;]+)/)?.[1] ?? '1';
     dialogContent.innerHTML = `<img src="${photo}" alt="${dialog.getAttribute('data-artist') ?? 'Gallery photo'}" style="--ar: ${aspectRatio};" />`;
@@ -305,6 +373,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
       dialog.close();
     }
 
+    dialog.classList.remove('is-custom');
     updateDialogUrl(null);
     dialog.removeAttribute('data-photo-key');
   };
@@ -313,6 +382,11 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     const photoKey = new URLSearchParams(window.location.search).get('photo');
 
     if (!photoKey) return;
+
+    if (photoKey === CUSTOM_SLIDE_KEY) {
+      renderCustomSlide({ updateUrl: false });
+      return;
+    }
 
     const photoButton = getPhotoButtons().find((button) => {
       const currentKey = button.getAttribute('data-photo-key');
@@ -325,27 +399,58 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
   };
 
   const navigateToPhoto = (direction) => {
-    const currentKey = dialog.getAttribute('data-photo-key');
     const photoButtons = getPhotoButtons();
 
-    if (!currentKey || !photoButtons.length) return;
+    if (!photoButtons.length) return;
+
+    const currentKey = dialog.getAttribute('data-photo-key');
+
+    const dialogThanks = document.querySelector('[data-dialog-thanks]') as HTMLElement | null;
+    dialogThanks?.setAttribute('aria-hidden', 'true');
+
+    if (currentKey === CUSTOM_SLIDE_KEY) {
+      const fallbackButton = direction > 0 ? photoButtons[0] : photoButtons[photoButtons.length - 1];
+      if (fallbackButton) {
+        openPhotoDialog(fallbackButton);
+      }
+      return;
+    }
 
     const currentIndex = photoButtons.findIndex((button) => {
       const buttonKey = button.getAttribute('data-photo-key');
-      return buttonKey === currentKey || (buttonKey && decodeURIComponent(currentKey) === buttonKey);
+      return buttonKey === currentKey || (buttonKey && decodeURIComponent(currentKey ?? '') === buttonKey);
     });
 
-    if (currentIndex === -1) return;
+    if (currentIndex === -1) {
+      const fallbackButton = direction > 0 ? photoButtons[0] : photoButtons[photoButtons.length - 1];
+      openPhotoDialog(fallbackButton);
+      return;
+    }
 
-    const nextIndex = (currentIndex + direction + photoButtons.length) % photoButtons.length;
-    const nextPhotoButton = photoButtons[nextIndex];
+    if (direction > 0) {
+      if (currentIndex === photoButtons.length - 1) {
+        renderCustomSlide();
+        return;
+      }
 
-    openPhotoDialog(nextPhotoButton);
+      openPhotoDialog(photoButtons[currentIndex + 1]);
+      return;
+    }
+
+    if (currentIndex === 0) {
+      renderCustomSlide();
+      return;
+    }
+
+    openPhotoDialog(photoButtons[currentIndex - 1]);
   };
 
   document.addEventListener('click', (e) => {
-    const dialogNavButton = (e.target as HTMLElement)!.closest('[data-dialog-nav]') as HTMLButtonElement | null;
+    const target = e.target as HTMLElement;
 
+    if (!target) return;
+
+    const dialogNavButton = target!.closest('[data-dialog-nav]') as HTMLButtonElement | null;
     if (dialogNavButton) {
       if (dialogNavButton.dataset.dialogNav === 'next') {
         navigateToPhoto(1);
@@ -358,10 +463,18 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
       return;
     }
 
-    const photoButton = (e.target as HTMLElement)!.closest('button[data-photo]') as HTMLButtonElement;
-
+    const photoButton = target!.closest('button[data-photo]') as HTMLButtonElement;
     if (photoButton) {
       openPhotoDialog(photoButton);
+    }
+
+    const downloadButton = target!.closest('[data-dialog-download]') as HTMLAnchorElement | null;
+    const dialogThanks = document.querySelector('[data-dialog-thanks]') as HTMLElement | null;
+
+    if (downloadButton) {
+      dialogThanks?.setAttribute('aria-hidden', 'false');
+      e.preventDefault();
+      setTimeout(() => (window.location.href = (target as HTMLLinkElement).href), 1000);
     }
   });
 
@@ -387,19 +500,15 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     }
 
     dialog.removeAttribute('data-photo-key');
+
+    const dialogThanks = document.querySelector('[data-dialog-thanks]') as HTMLElement | null;
+    dialogThanks?.setAttribute('aria-hidden', 'true');
   });
 
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) {
       closePhotoDialog();
     }
-  });
-
-  dialogNavButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const direction = button.dataset.dialogNav === 'next' ? 1 : -1;
-      navigateToPhoto(direction);
-    });
   });
 
   document.addEventListener('astro:page-load', () => {
@@ -442,8 +551,35 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     width: min(92vw, 1100px);
     color: var(--c-text);
 
-    &::backdrop {
-      background: rgba(0, 0, 0, 0.7);
+    &.is-custom {
+      .dialog-copy,
+      [data-dialog-download],
+      .dialog-photo-caption {
+        display: none;
+      }
+
+      .dialog-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+
+  .dialog-photo-caption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--space-3);
+    color: white;
+    text-align: center;
+
+    strong {
+      font-size: var(--font-4);
+    }
+
+    span {
+      font-size: var(--font-2);
+      opacity: 0.9;
     }
   }
 
@@ -452,8 +588,8 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     top: 1rem;
     right: 1rem;
     z-index: 2;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: var(--space-6);
+    aspect-ratio: 1;
     display: grid;
     place-items: center;
     color: white;
@@ -464,7 +600,7 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 1.5rem;
+    gap: var(--space-4);
     color: var(--c-white);
   }
 
@@ -472,22 +608,14 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    gap: 0.35rem;
-  }
-
-  .dialog-copy p {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 1.5rem;
+    min-width: 0;
   }
 
   .dialog-index {
-    font-size: 0.85rem;
+    font-size: var(--font-1);
     letter-spacing: 0.08em;
-    text-transform: uppercase;
     opacity: 0.85;
   }
 
@@ -511,6 +639,97 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
     }
   }
 
+  .dialog-download {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-white);
+    white-space: nowrap;
+    text-decoration: none;
+    position: relative;
+  }
+
+  .dialog-thanks {
+    position: absolute;
+    left: 50%;
+    bottom: 4rem;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--c-white);
+    color: var(--c-black);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--space-2);
+    opacity: 0;
+    transform-origin: left bottom;
+    transition:
+      opacity 0.3s ease,
+      bottom 0.3s ease;
+    pointer-events: none;
+    user-select: none;
+
+    p {
+      margin: 0;
+    }
+
+    img {
+      width: 100%;
+      max-width: 200px;
+    }
+  }
+
+  .dialog-thanks[aria-hidden='false'] {
+    pointer-events: auto;
+    opacity: 1;
+    bottom: 5rem;
+  }
+
+  .dialog-custom-slide {
+    display: grid;
+    place-items: center;
+    min-height: min(70vh, 600px);
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 1rem;
+    text-align: center;
+    padding: 2rem;
+    color: white;
+    position: relative;
+  }
+
+  .dialog-custom-inner {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 30rem;
+
+    h2 {
+      text-transform: revert;
+      font-size: var(--font-7);
+      margin: 0;
+    }
+
+    p {
+      margin: 0;
+      text-wrap: balance;
+      margin-bottom: var(--space-5);
+    }
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+
+      img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: auto;
+        border: 0;
+      }
+    }
+  }
+
   section {
     background: rgba(0, 0, 0, 0.9);
     overflow: hidden;
@@ -523,7 +742,6 @@ const prefix = `https://tijsvl.b-cdn.net/galleries/${artistSlug}/${citySlug}/${d
       max-height: min(82vh, 900px);
       aspect-ratio: var(--ar, 1);
       object-fit: cover;
-      opacity: 0.5;
     }
   }
 

@@ -23,3 +23,6 @@ src/lib/firebase/firebase-secrets.server.json
 
 # jetbrains setting folder
 .idea/
+
+# original gallery images
+_source-files/

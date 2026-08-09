@@ -40,7 +40,9 @@ const maxFontSize = artist.length < 10 ? 'medium' : 'large';
 
 <Layout>
   <article>
-    <H1 scale={true} maxFontSize={maxFontSize}>{artist}</H1>
+    <H1 scale={true} maxFontSize={maxFontSize} transitionName={artistSlug + '-' + date}>
+      {artist}
+    </H1>
     <div>
       <h2>{venue}, {city}, {country}</h2>
       <time datetime={prettyDate(date, 'html')}>{prettyDate(date, 'extended')}</time>

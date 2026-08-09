@@ -177,6 +177,10 @@ section[data-split] {
   gap: var(--space-6);
 }
 
+dialog {
+  user-select: none;
+}
+
 dialog[open] {
   display: flex;
   flex-direction: column;
@@ -226,6 +230,6 @@ dialog[open] {
   }
 
   &::backdrop {
-    background-color: rgb(from var(--c-black) r g b / 0.96);
+    background-color: rgb(from var(--c-black) r g b / 0.9);
   }
 }

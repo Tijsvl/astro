@@ -6,6 +6,7 @@ import { galleryUrl, type Gallery } from '../data/galleries.ts';
 import { galleryDateToUnix } from '@utils/date';
 import { prettyDate } from '@utils/prettyDate';
 import { countryCode } from '@utils/countryCode';
+import { slug } from '@utils/slug.js';
 import '/node_modules/flag-icons/css/flag-icons.min.css';
 
 type GalleryDocument = {
@@ -68,7 +69,7 @@ galleries.sort((left, right) => right.unix - left.unix);
             data-sort-country={gallery.country}
           >
             <td class='artist'>
-              <a href={galleryUrl(gallery)} aria-label={gallery.name} />
+              <a href={galleryUrl(gallery)} aria-label={gallery.name} transition:name=`${'title-' + slug(gallery.name+'-'+gallery.date)}`  />
               {gallery.name}
             </td>
             <td class='location' data-show='small medium'>
@@ -194,6 +195,7 @@ galleries.sort((left, right) => right.unix - left.unix);
         a {
           position: absolute;
           inset: 0;
+          display:inline-block;
         }
       }
 

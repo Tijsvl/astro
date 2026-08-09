@@ -1,26 +1,32 @@
 ---
+import { slug } from '@utils/slug.js';
+
 type Props = {
   scale?: boolean;
   maxFontSize?: "small" | "medium" | "large";
+  transitionName?: string;
 };
 
 
-const { scale, maxFontSize } = Astro.props as Props;
+const { scale, maxFontSize, transitionName } = Astro.props as Props;
 
 
 let fontSize = '120px';
 if (maxFontSize === "small") fontSize = '80px'
 else if (maxFontSize === "medium") fontSize = '120px'
 else if (maxFontSize === "large") fontSize = '175px'
+
+
+const transitionId = `title-${slug(transitionName || "")}`;
 ---
 
-<h1 id='page-title' {...scale ? { 'data-scale': '' } : {}}  style=`--_max-font-size:${fontSize}`>
+<h1 id='page-title' {...scale ? { 'data-scale': '' } : {}} style=`--_max-font-size:${fontSize};`>
   {
     scale ? (
       <>
         <!-- prettier-ignore -->
         <span aria-hidden="true"><slot /></span>
-        <span><slot /></span>
+        <span transition:name={transitionId}><slot /></span>
       </>
     ) : (
       <slot />
@@ -35,6 +41,7 @@ else if (maxFontSize === "large") fontSize = '175px'
     position: relative;
     max-width: var(--max-width);
     margin-bottom: var(--space-3);
+    view-transition-name: var(--_transition-name);
 
       span:first-child {
       position: absolute;
