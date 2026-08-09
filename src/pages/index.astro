@@ -3,7 +3,13 @@ import Layout from '../layouts/Layout.astro';
 
 const columnCount = 2;
 
-const shuffle = (items: string[], shouldShuffle = true) => {
+type TGalleryPhoto = {
+  src: string;
+  small: string;
+  medium: string;
+};
+
+const shuffle = <T,>(items: T[], shouldShuffle = true): T[] => {
   const array = [...items];
 
   if (!shouldShuffle) {
@@ -18,13 +24,25 @@ const shuffle = (items: string[], shouldShuffle = true) => {
   return array;
 };
 
-const galleryPhotos = Object.values(import.meta.glob('/public/gallery/*.{jpg,jpeg,png}', { eager: true })) as Array<{
+const galleryPhotos = Object.values(import.meta.glob('/public/gallery/small/*.jpg', { eager: true })) as Array<{
   default: string | { src?: string };
 }>;
-const photos = shuffle(
+const photos: TGalleryPhoto[] = shuffle(
   galleryPhotos
-    .map((entry) => (typeof entry.default === 'string' ? entry.default : entry.default?.src))
-    .filter((src): src is string => Boolean(src)),
+    .map((entry) => {
+      const src = typeof entry.default === 'string' ? entry.default : entry.default?.src;
+      if (!src) return null;
+
+      const filename = src.split('/').pop();
+      if (!filename) return null;
+
+      return {
+        src: `/gallery/medium/${filename}`,
+        small: `/gallery/small/${filename}`,
+        medium: `/gallery/medium/${filename}`
+      };
+    })
+    .filter((photo): photo is TGalleryPhoto => Boolean(photo)),
   true
 );
 const photosPerColumn = Math.ceil(photos.length / columnCount);
@@ -33,7 +51,7 @@ const columns = Array.from({ length: columnCount }, (_, columnIndex) => {
   const start = columnIndex * photosPerColumn;
   const end = start + photosPerColumn;
 
-  return photos.slice(start, end).map((src) => ({ src }));
+  return photos.slice(start, end).map((photo) => ({ ...photo }));
 });
 ---
 
@@ -42,8 +60,14 @@ const columns = Array.from({ length: columnCount }, (_, columnIndex) => {
     {
       columns.map((column) => (
         <section class='column'>
-          {column.map(({ src }) => (
-            <img src={src} alt='Gallery photo' />
+          {column.map(({ src, small, medium }) => (
+            <img
+              src={src}
+              srcset={`${medium} 1080w, ${small} 540w`}
+              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+              alt='Gallery photo'
+              loading='lazy'
+            />
           ))}
         </section>
       ))
