@@ -65,6 +65,6 @@ export const prettyDate = (input: string | number, format?: 'extended' | 'short'
   return formattedDate;
 };
 
-export const prettyText = (input: string): string => {
-  return input.replaceAll('_', ' ');
+export const prettyText = (input?: string): string => {
+  return input?.replaceAll('_', ' ') ?? '';
 };
